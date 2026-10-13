@@ -84,6 +84,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebas
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc, updateDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+window.__pp = 1;
 const ADMIN_EMAIL = 'admin@pelada.com';
 const app = initializeApp({
   apiKey: "AIzaSyAVBH-PP3o4K6S7jYsYXY87U0k3wWnNMu8",
@@ -342,6 +343,19 @@ onAuthStateChanged(auth, u => {
   unsubs = [listen('players', v => players = v), listen('stats', v => stats = v), listen('matches', v => matches = v), listen('ratings', v => ratings = v)];
   render();
 });
+</script>
+<script>
+setTimeout(() => {
+  const miss = [];
+  if (!window.__pp) miss.push('Firebase');
+  if (typeof tailwind === 'undefined') miss.push('Tailwind');
+  if (miss.length) {
+    const d = document.createElement('div');
+    d.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:99;background:#b91c1c;color:#fff;padding:12px;font:600 14px sans-serif;text-align:center';
+    d.textContent = 'Não carregou: ' + miss.join(' e ') + '. Abra o site por um endereço http(s) (Firebase Hosting ou localhost), não pela pré-visualização nem como arquivo local.';
+    document.body.appendChild(d);
+  }
+}, 4000);
 </script>
 </body>
 </html>
