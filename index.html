@@ -105,7 +105,7 @@ const S = { tab: 'ranking', week: 'all', sort: 'ovr', sub: 'stats', signup: fals
 /* ---------- Datas e semanas (semana começa na segunda) ---------- */
 const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 const monday = s => { const d = new Date(s + 'T12:00:00'); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return iso(d); };
-const fmt = s => { const [, m, d] = s.split('-'); return d + '/' + m; };
+const fmt = s => { if (!s) return ''; const [, m, d] = s.split('-'); return d + '/' + m; };
 const wLabel = w => { const e = new Date(w + 'T12:00:00'); e.setDate(e.getDate() + 6); return fmt(w) + ' a ' + fmt(iso(e)); };
 const thisWeek = () => monday(iso(new Date()));
 const weeks = () => [...new Set([thisWeek(), ...extra, ...matches.map(m => m.weekId), ...stats.map(s => s.weekId), ...ratings.map(r => r.weekId)].filter(Boolean))].sort().reverse();
@@ -181,7 +181,7 @@ function rRanking() {
 }
 
 function rMatches() {
-  const ms = matches.filter(m => S.week === 'all' || m.weekId === S.week).sort((a, b) => b.date.localeCompare(a.date));
+  const ms = matches.filter(m => S.week === 'all' || m.weekId === S.week).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   if (!ms.length) return empty('Nenhuma partida registrada nesta semana.');
   let last = '';
   return ms.map(m => {
