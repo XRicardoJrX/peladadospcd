@@ -1,49 +1,484 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Futebol de Quinta - Arena da Baixada</title>
+    <title>Pelada Pro - Gestão de Futebol Amador</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            500: '#10b981', // Emerald 500 (Sporty Green)
+                            600: '#059669',
+                            900: '#064e3b',
+                        },
+                        dark: {
+                            bg: '#0f172a', // Slate 900
+                            surface: '#1e293b', // Slate 800
+                            border: '#334155' // Slate 700
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #2c3e50; }
-        .filtros { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
-        button { padding: 10px 20px; border: none; background: #3498db; color: white; border-radius: 5px; cursor: pointer; }
-        button:hover { background: #2980b9; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #ddd; }
-        th { background-color: #2c3e50; color: white; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .tab-active { color: #10b981; }
+        .hide { display: none !important; }
+        
+        /* Custom Scrollbar for dark theme */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
 </head>
-<body>
+<body class="bg-dark-bg text-slate-100 min-h-screen flex flex-col">
 
-<div class="container">
-    <h1>🏆 Ranking da Pelada</h1>
-    
-    <div class="filtros">
-        <button onclick="carregarRanking('diario')">Última Quinta</button>
-        <button onclick="carregarRanking('mensal')">Mês Atual</button>
-        <button onclick="carregarRanking('total')">Geral</button>
-    </div>
+    <!-- Header -->
+    <header class="bg-dark-surface border-b border-dark-border p-4 sticky top-0 z-50">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold text-brand-500"><i class="fa-solid fa-futbol mr-2"></i>Pelada Pro</h1>
+            <div id="userInfo" class="text-sm text-slate-400 hide">
+                <span id="userNameDisplay"></span>
+                <button id="logoutBtn" class="ml-3 text-red-400 hover:text-red-300"><i class="fa-solid fa-sign-out-alt"></i> Sair</button>
+            </div>
+        </div>
+    </header>
 
-    <h2 id="titulo-ranking">Ranking Geral</h2>
+    <!-- Modal/Alert System -->
+    <div id="alertBox" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-[90%] max-w-sm p-4 rounded-lg shadow-lg hide transition-all duration-300 text-center text-sm font-medium"></div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Jogador</th>
-                <th>Gols</th>
-                <th>Defesas</th>
-                <th>Nota Média</th>
-            </tr>
-        </thead>
-        <tbody id="tabela-ranking">
-            <!-- O JavaScript vai injetar as linhas aqui -->
-        </tbody>
-    </table>
-</div>
+    <!-- Main Content Area -->
+    <main class="flex-grow pb-20 max-w-md mx-auto w-full p-4">
+        
+        <!-- View: Login -->
+        <section id="view-login" class="flex flex-col items-center justify-center mt-10 space-y-6">
+            <div class="w-full bg-dark-surface p-6 rounded-2xl shadow-xl border border-dark-border">
+                <h2 class="text-2xl font-bold text-center mb-6">Entrar</h2>
+                <form id="loginForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1">E-mail</label>
+                        <input type="email" id="email" class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 text-white focus:outline-none focus:border-brand-500" placeholder="seu@email.com" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1">Senha</label>
+                        <input type="password" id="password" class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 text-white focus:outline-none focus:border-brand-500" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" id="loginSubmitBtn" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 rounded-lg transition-colors mt-2">
+                        Entrar
+                    </button>
+                </form>
+            </div>
+            <p class="text-xs text-slate-500 text-center">Somente o administrador pode cadastrar novos jogadores.</p>
+        </section>
 
-<script src="app.js"></script>
+        <!-- View: Rankings -->
+        <section id="view-rankings" class="hide space-y-4">
+            <h2 class="text-xl font-bold mb-4 border-l-4 border-brand-500 pl-2">Classificação</h2>
+            
+            <!-- Filters -->
+            <div class="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide text-sm">
+                <button class="px-4 py-1.5 rounded-full bg-brand-900 text-brand-500 border border-brand-500 whitespace-nowrap">Total</button>
+                <button class="px-4 py-1.5 rounded-full bg-dark-surface text-slate-400 border border-dark-border whitespace-nowrap">Mensal</button>
+                <button class="px-4 py-1.5 rounded-full bg-dark-surface text-slate-400 border border-dark-border whitespace-nowrap">Semanal</button>
+            </div>
+
+            <!-- Table -->
+            <div class="bg-dark-surface rounded-xl overflow-hidden border border-dark-border">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-dark-bg text-slate-400 text-xs uppercase">
+                        <tr>
+                            <th class="px-3 py-3">Pos</th>
+                            <th class="px-3 py-3">Jogador</th>
+                            <th class="px-3 py-3 text-center">G</th>
+                            <th class="px-3 py-3 text-center">A</th>
+                            <th class="px-3 py-3 text-center text-brand-500 font-bold">OVR</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rankingTableBody" class="divide-y divide-dark-border">
+                        <!-- Gerado via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- View: Avaliações -->
+        <section id="view-ratings" class="hide space-y-4">
+            <h2 class="text-xl font-bold mb-2 border-l-4 border-brand-500 pl-2">Avaliações</h2>
+            <div id="ratingsStatus" class="bg-dark-surface p-4 rounded-xl border border-dark-border text-center text-slate-300">
+                <i class="fa-regular fa-clock text-3xl text-brand-500 mb-3 block"></i>
+                <p>As avaliações são liberadas <strong>toda quinta-feira, a partir das 22h</strong>.</p>
+            </div>
+            
+            <div id="ratingsFormArea" class="hide space-y-4">
+                <p class="text-sm text-slate-400">Dê uma nota de 0 a 10 para os jogadores da última partida.</p>
+                <div id="playersToRateList" class="space-y-3">
+                    <!-- Gerado via JS -->
+                </div>
+                <button id="submitRatingsBtn" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg">
+                    Enviar Avaliações
+                </button>
+            </div>
+        </section>
+
+        <!-- View: Profile -->
+        <section id="view-profile" class="hide space-y-6">
+            <h2 class="text-xl font-bold border-l-4 border-brand-500 pl-2">Meu Perfil</h2>
+            <div class="bg-dark-surface p-6 rounded-2xl border border-dark-border flex flex-col items-center">
+                <div class="w-24 h-24 bg-dark-bg rounded-full flex items-center justify-center border-4 border-brand-500 mb-4 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                    <span id="profileOvr" class="text-3xl font-bold text-white">0</span>
+                </div>
+                <h3 id="profileName" class="text-xl font-bold">Jogador</h3>
+                <p id="profileEmail" class="text-sm text-slate-400 mb-6">email@email.com</p>
+
+                <div class="grid grid-cols-3 gap-4 w-full text-center">
+                    <div class="bg-dark-bg p-3 rounded-xl">
+                        <div class="text-slate-400 text-xs uppercase mb-1">Gols</div>
+                        <div id="profileGoals" class="text-xl font-bold">0</div>
+                    </div>
+                    <div class="bg-dark-bg p-3 rounded-xl">
+                        <div class="text-slate-400 text-xs uppercase mb-1">Assists</div>
+                        <div id="profileAssists" class="text-xl font-bold">0</div>
+                    </div>
+                    <div class="bg-dark-bg p-3 rounded-xl">
+                        <div class="text-slate-400 text-xs uppercase mb-1">Nota Média</div>
+                        <div id="profileRating" class="text-xl font-bold text-brand-500">0.0</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- View: Admin -->
+        <section id="view-admin" class="hide space-y-6">
+            <h2 class="text-xl font-bold border-l-4 border-amber-500 pl-2 text-amber-500">Painel Admin</h2>
+            
+            <!-- Add Match Form -->
+            <div class="bg-dark-surface p-5 rounded-xl border border-dark-border">
+                <h3 class="font-bold mb-3"><i class="fa-solid fa-plus-circle mr-2"></i>Nova Partida</h3>
+                <div class="space-y-3">
+                    <input type="date" id="matchDate" class="w-full bg-dark-bg border border-dark-border rounded-lg p-2 text-white text-sm focus:outline-none">
+                    <button onclick="adminCreateMatch()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-medium py-2 rounded-lg text-sm transition">
+                        Registrar Partida
+                    </button>
+                </div>
+            </div>
+
+            <!-- Add Player Form -->
+            <div class="bg-dark-surface p-5 rounded-xl border border-dark-border">
+                <h3 class="font-bold mb-3"><i class="fa-solid fa-user-plus mr-2"></i>Cadastrar Jogador</h3>
+                <form id="addPlayerForm" class="space-y-3">
+                    <input type="text" id="newPlayerName" placeholder="Nome" class="w-full bg-dark-bg border border-dark-border rounded-lg p-2 text-white text-sm" required>
+                    <input type="email" id="newPlayerEmail" placeholder="E-mail" class="w-full bg-dark-bg border border-dark-border rounded-lg p-2 text-white text-sm" required>
+                    <button type="submit" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-medium py-2 rounded-lg text-sm transition">
+                        Criar Cadastro (Padrão: senha123)
+                    </button>
+                </form>
+            </div>
+            
+             <div class="bg-dark-surface p-5 rounded-xl border border-dark-border">
+                <h3 class="font-bold mb-3 text-slate-400 text-sm">Avisos</h3>
+                <p class="text-xs text-slate-500">Para simplificar este protótipo, a atribuição de estatísticas na partida e seleções profundas devem ser geridas no Console do Firebase ou expandindo este módulo admin.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav id="bottomNav" class="bg-dark-surface border-t border-dark-border fixed bottom-0 w-full z-50 hide pb-safe">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <button onclick="switchView('rankings')" class="flex-1 py-3 flex flex-col items-center text-slate-500 hover:text-brand-500 transition tab-btn" data-target="rankings">
+                <i class="fa-solid fa-trophy text-lg mb-1"></i>
+                <span class="text-[10px] uppercase font-semibold">Ranking</span>
+            </button>
+            <button onclick="switchView('ratings')" class="flex-1 py-3 flex flex-col items-center text-slate-500 hover:text-brand-500 transition tab-btn" data-target="ratings">
+                <i class="fa-solid fa-star text-lg mb-1"></i>
+                <span class="text-[10px] uppercase font-semibold">Avaliar</span>
+            </button>
+            <button onclick="switchView('profile')" class="flex-1 py-3 flex flex-col items-center text-slate-500 hover:text-brand-500 transition tab-btn" data-target="profile">
+                <i class="fa-solid fa-user text-lg mb-1"></i>
+                <span class="text-[10px] uppercase font-semibold">Perfil</span>
+            </button>
+            <button onclick="switchView('admin')" id="navAdminBtn" class="flex-1 py-3 flex flex-col items-center text-slate-500 hover:text-amber-500 transition tab-btn hide" data-target="admin">
+                <i class="fa-solid fa-shield-halved text-lg mb-1"></i>
+                <span class="text-[10px] uppercase font-semibold text-amber-500">Admin</span>
+            </button>
+        </div>
+    </nav>
+
+    <script type="module">
+        // Importações do Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, doc, setDoc, getDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Configuração do ambiente e Firebase
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'pelada-app-default';
+        let firebaseConfig = {
+            // *** SUBSTITUA ESTAS CREDENCIAIS PELAS DO SEU PROJETO FIREBASE ***
+            apiKey: "COLE_SUA_API_KEY_AQUI",
+            authDomain: "seu-projeto.firebaseapp.com",
+            projectId: "seu-projeto",
+            storageBucket: "seu-projeto.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456:web:123456"
+        };
+
+        // Fallback para ambiente de teste/imersivo
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+        }
+
+        // Inicialização
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Caminhos Base (Regra Restrita do ambiente ou sua coleção padrão)
+        const basePath = typeof __app_id !== 'undefined' ? `artifacts/${appId}/public/data/` : '';
+        const COL_PLAYERS = basePath + 'players';
+        const COL_MATCHES = basePath + 'matches';
+
+        // Estado Global
+        let currentUser = null;
+        let isUserAdmin = false;
+        let playersData = [];
+
+        // DOM Elements
+        const views = {
+            login: document.getElementById('view-login'),
+            rankings: document.getElementById('view-rankings'),
+            ratings: document.getElementById('view-ratings'),
+            profile: document.getElementById('view-profile'),
+            admin: document.getElementById('view-admin')
+        };
+        const bottomNav = document.getElementById('bottomNav');
+        const userInfo = document.getElementById('userInfo');
+        const navAdminBtn = document.getElementById('navAdminBtn');
+
+        // Helpers de UI
+        function showAlert(msg, type = 'success') {
+            const box = document.getElementById('alertBox');
+            box.textContent = msg;
+            box.className = `fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] w-[90%] max-w-sm p-3 rounded-lg shadow-lg transition-all duration-300 text-center text-sm font-bold text-white ${type === 'error' ? 'bg-red-500' : 'bg-emerald-500'}`;
+            box.classList.remove('hide');
+            setTimeout(() => box.classList.add('hide'), 3000);
+        }
+
+        window.switchView = function(viewName) {
+            Object.values(views).forEach(v => v.classList.add('hide'));
+            if(views[viewName]) views[viewName].classList.remove('hide');
+            
+            // Update tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                if(btn.dataset.target === viewName) {
+                    btn.classList.add('tab-active');
+                } else {
+                    btn.classList.remove('tab-active');
+                }
+            });
+
+            if(viewName === 'rankings') loadRankings();
+            if(viewName === 'ratings') checkRatingsAvailability();
+            if(viewName === 'profile') loadProfile();
+        };
+
+        // Auth Logic
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('loginSubmitBtn');
+            btn.textContent = 'Carregando...';
+            btn.disabled = true;
+
+            try {
+                // Aqui tenta logar. Lembre-se que no seu Firebase real a regra de email precisa estar habilitada
+                await signInWithEmailAndPassword(auth, email, password);
+                showAlert('Login realizado com sucesso!');
+            } catch (error) {
+                console.error(error);
+                showAlert('Erro no login. Verifique as credenciais.', 'error');
+            } finally {
+                btn.textContent = 'Entrar';
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                // Hardcode admin check (Mude para o e-mail que desejar ser admin)
+                isUserAdmin = user.email === 'admin@pelada.com'; 
+                
+                document.getElementById('userNameDisplay').textContent = user.email.split('@')[0];
+                userInfo.classList.remove('hide');
+                bottomNav.classList.remove('hide');
+                
+                if(isUserAdmin) navAdminBtn.classList.remove('hide');
+                else navAdminBtn.classList.add('hide');
+
+                // Verifica se o usuário tem documento no DB, se não (e não é teste), criaria
+                // Mas a lógica pede que admin crie.
+                
+                window.switchView('rankings');
+            } else {
+                currentUser = null;
+                isUserAdmin = false;
+                userInfo.classList.add('hide');
+                bottomNav.classList.add('hide');
+                window.switchView('login');
+            }
+        });
+
+        // Data Fetching
+        async function fetchPlayers() {
+            if(!currentUser) return;
+            try {
+                const querySnapshot = await getDocs(collection(db, COL_PLAYERS));
+                playersData = [];
+                querySnapshot.forEach((doc) => {
+                    playersData.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Calculo de Overall (Exemplo: Gols + Assists + Media Notas)
+                playersData = playersData.map(p => {
+                    let ovr = ((p.goals || 0) * 1.5) + ((p.assists || 0) * 1.2) + ((p.rating || 0) * 3);
+                    p.overall = Math.min(Math.round(ovr), 99); // max 99
+                    return p;
+                });
+            } catch (e) {
+                console.error("Erro ao buscar jogadores", e);
+            }
+        }
+
+        async function loadRankings() {
+            await fetchPlayers();
+            const tbody = document.getElementById('rankingTableBody');
+            tbody.innerHTML = '';
+            
+            // Ordena por Overall
+            const sortedPlayers = [...playersData].sort((a, b) => (b.overall || 0) - (a.overall || 0));
+
+            sortedPlayers.forEach((p, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-dark-surface/50 transition";
+                tr.innerHTML = `
+                    <td class="px-3 py-3 text-slate-400 font-bold">${index + 1}º</td>
+                    <td class="px-3 py-3 font-medium">${p.name || 'Sem nome'}</td>
+                    <td class="px-3 py-3 text-center text-slate-400">${p.goals || 0}</td>
+                    <td class="px-3 py-3 text-center text-slate-400">${p.assists || 0}</td>
+                    <td class="px-3 py-3 text-center font-bold text-brand-500">${p.overall || 0}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function loadProfile() {
+            const me = playersData.find(p => p.email === currentUser.email);
+            if(me) {
+                document.getElementById('profileName').textContent = me.name || 'Jogador';
+                document.getElementById('profileEmail').textContent = me.email;
+                document.getElementById('profileOvr').textContent = me.overall || 0;
+                document.getElementById('profileGoals').textContent = me.goals || 0;
+                document.getElementById('profileAssists').textContent = me.assists || 0;
+                document.getElementById('profileRating').textContent = (me.rating || 0).toFixed(1);
+            } else {
+                document.getElementById('profileName').textContent = 'Admin / Não cadastrado no DB';
+                document.getElementById('profileEmail').textContent = currentUser.email;
+            }
+        }
+
+        function checkRatingsAvailability() {
+            const now = new Date();
+            const day = now.getDay(); // 0 = Dom, 4 = Qui
+            const hour = now.getHours();
+
+            const statusBox = document.getElementById('ratingsStatus');
+            const formArea = document.getElementById('ratingsFormArea');
+
+            // Regra: Quinta-feira (4) a partir das 22h, ou Sexta(5)
+            const isAvailable = (day === 4 && hour >= 22) || (day === 5);
+
+            if(isAvailable) {
+                statusBox.classList.add('hide');
+                formArea.classList.remove('hide');
+                renderRatingsForm();
+            } else {
+                statusBox.classList.remove('hide');
+                formArea.classList.add('hide');
+            }
+        }
+
+        function renderRatingsForm() {
+            const list = document.getElementById('playersToRateList');
+            list.innerHTML = '';
+            // Na vida real, pegaria só os que participaram da última partida. Aqui lista todos - o próprio.
+            playersData.filter(p => p.email !== currentUser.email).forEach(p => {
+                list.innerHTML += `
+                    <div class="flex items-center justify-between bg-dark-bg p-3 rounded-lg border border-dark-border">
+                        <span class="font-medium">${p.name}</span>
+                        <select class="bg-dark-surface border border-dark-border text-white rounded p-1 text-sm outline-none w-16">
+                            <option value="-">-</option>
+                            ${[...Array(11).keys()].map(n => `<option value="${n}">${n}</option>`).join('')}
+                        </select>
+                    </div>
+                `;
+            });
+        }
+
+        // Admin Functions
+        document.getElementById('addPlayerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!isUserAdmin) return;
+            const name = document.getElementById('newPlayerName').value;
+            const email = document.getElementById('newPlayerEmail').value;
+            try {
+                // Aqui o Admin cria a entrada no Firestore (Obs: o Auth deve ser feito fora ou via Cloud Functions no mundo real)
+                await setDoc(doc(collection(db, COL_PLAYERS), email), {
+                    name: name,
+                    email: email,
+                    goals: 0,
+                    assists: 0,
+                    rating: 0,
+                    role: 'player'
+                });
+                showAlert('Jogador cadastrado no banco de dados!');
+                document.getElementById('addPlayerForm').reset();
+            } catch (err) {
+                showAlert('Erro ao cadastrar', 'error');
+                console.error(err);
+            }
+        });
+
+        window.adminCreateMatch = async function() {
+            const date = document.getElementById('matchDate').value;
+            if(!date) return showAlert('Escolha uma data', 'error');
+            try {
+                await addDoc(collection(db, COL_MATCHES), {
+                    date: date,
+                    status: 'open',
+                    createdAt: new Date().toISOString()
+                });
+                showAlert('Partida registrada com sucesso!');
+            } catch (err) {
+                showAlert('Erro ao registrar', 'error');
+            }
+        }
+
+    </script>
 </body>
 </html>
