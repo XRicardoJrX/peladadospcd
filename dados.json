@@ -1,23 +1,16 @@
 {
   "jogadores": [
     { "id": 1, "nome": "Ricardo", "goleiro": false },
-    { "id": 2, "nome": "Muralha", "goleiro": true },
-    { "id": 3, "nome": "Camisa 10", "goleiro": false }
+    { "id": 2, "nome": "Goleiro A", "goleiro": true },
+    { "id": 3, "nome": "Jogador C", "goleiro": false }
   ],
   "partidas": [
     {
       "data": "2026-10-08",
       "desempenho": [
-        { "id_jogador": 1, "gols": 2, "defesas": 0, "nota": 8.5 },
-        { "id_jogador": 2, "gols": 0, "defesas": 8, "nota": 9.0 },
-        { "id_jogador": 3, "gols": 1, "defesas": 0, "nota": 7.0 }
-      ]
-    },
-    {
-      "data": "2026-10-15",
-      "desempenho": [
-        { "id_jogador": 1, "gols": 1, "defesas": 0, "nota": 7.5 },
-        { "id_jogador": 2, "gols": 0, "defesas": 5, "nota": 8.0 }
+        { "id_jogador": 1, "gols": 2, "assistencias": 1, "defesas": 0, "nota": 8.5 },
+        { "id_jogador": 2, "gols": 0, "assistencias": 0, "defesas": 6, "nota": 9.0 },
+        { "id_jogador": 3, "gols": 1, "assistencias": 2, "defesas": 0, "nota": 7.5 }
       ]
     }
   ]
