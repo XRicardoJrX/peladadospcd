@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Futebol de Quinta - Arena da Baixada</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; }
+        .filtros { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        button { padding: 10px 20px; border: none; background: #3498db; color: white; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #2980b9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #ddd; }
+        th { background-color: #2c3e50; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🏆 Ranking da Pelada</h1>
+    
+    <div class="filtros">
+        <button onclick="carregarRanking('diario')">Última Quinta</button>
+        <button onclick="carregarRanking('mensal')">Mês Atual</button>
+        <button onclick="carregarRanking('total')">Geral</button>
+    </div>
+
+    <h2 id="titulo-ranking">Ranking Geral</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Jogador</th>
+                <th>Gols</th>
+                <th>Defesas</th>
+                <th>Nota Média</th>
+            </tr>
+        </thead>
+        <tbody id="tabela-ranking">
+            <!-- O JavaScript vai injetar as linhas aqui -->
+        </tbody>
+    </table>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
