@@ -1,485 +1,365 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="dark">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pelada Pro - Gestão de Futebol Amador</title>
-    <!-- Tailwind CSS -->
+    <title>Pelada Pro - Gerenciamento e Estatísticas</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            500: '#10b981', // Emerald 500 (Sporty Green)
-                            600: '#059669',
-                            900: '#064e3b',
-                        },
-                        dark: {
-                            bg: '#0f172a', // Slate 900
-                            surface: '#1e293b', // Slate 800
-                            border: '#334155' // Slate 700
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
-        .tab-active { color: #10b981; }
-        .hide { display: none !important; }
-        
-        /* Custom Scrollbar for dark theme */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        body { background-color: #111827; color: #f3f4f6; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .nav-item.active { color: #10b981; border-top: 2px solid #10b981; }
     </style>
 </head>
-<body class="bg-dark-bg text-slate-100 min-h-screen flex flex-col">
+<body class="pb-20">
 
-    <!-- Header -->
-    <header class="bg-dark-surface border-b border-dark-border p-4 sticky top-0 z-50">
-        <div class="max-w-md mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold text-brand-500"><i class="fa-solid fa-futbol mr-2"></i>Pelada Pro</h1>
-            <div id="userInfo" class="text-sm text-slate-400 hide">
-                <span id="userNameDisplay"></span>
-                <button id="logoutBtn" class="ml-3 text-red-400 hover:text-red-300"><i class="fa-solid fa-sign-out-alt"></i> Sair</button>
+    <!-- Tela de Login -->
+    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4 bg-gray-900">
+        <div class="bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-md border border-gray-700">
+            <h1 class="text-3xl font-bold text-center mb-6 text-white">Pelada Pro</h1>
+            <div id="login-error" class="hidden bg-red-600 text-white p-3 rounded mb-4 text-sm text-center">Erro de autenticação. Verifique as credenciais.</div>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300">E-mail</label>
+                    <input type="email" id="email" class="mt-1 w-full p-3 bg-gray-900 border border-gray-600 rounded-lg text-white focus:ring-green-500 focus:border-green-500 outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300">Senha</label>
+                    <input type="password" id="password" class="mt-1 w-full p-3 bg-gray-900 border border-gray-600 rounded-lg text-white focus:ring-green-500 focus:border-green-500 outline-none" required>
+                </div>
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition-colors">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Aplicação Principal -->
+    <div id="app-screen" class="hidden">
+        <!-- Cabeçalho -->
+        <header class="bg-gray-800 p-4 shadow-md flex justify-between items-center border-b border-gray-700 sticky top-0 z-10">
+            <h1 class="text-xl font-bold text-green-500">Pelada Pro</h1>
+            <div class="flex items-center gap-4">
+                <span id="user-email-display" class="text-sm text-gray-400"></span>
+                <button id="logout-btn" class="text-sm bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-white transition-colors">Sair</button>
+            </div>
+        </header>
+
+        <!-- Conteúdo das Abas -->
+        <main class="p-4 max-w-5xl mx-auto">
+            
+            <!-- Aba Admin -->
+            <div id="tab-admin" class="tab-content">
+                <div class="flex justify-between items-center border-b border-gray-700 pb-4 mb-6">
+                    <h2 class="text-2xl font-bold text-white">Painel Administrativo</h2>
+                    <button id="btn-new-player" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors text-sm">
+                        + Jogador
+                    </button>
+                </div>
+
+                <!-- Formulário Nova Partida -->
+                <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-lg mb-6">
+                    <h3 class="text-lg font-semibold text-gray-200 mb-4">Registro de Partida</h3>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <input type="date" id="match-date" class="bg-gray-900 text-white p-3 rounded-lg border border-gray-600 focus:border-green-500 w-full outline-none">
+                        <input type="text" id="match-result" placeholder="Resultado (ex: Time A 5 x 4 Time B)" class="bg-gray-900 text-white p-3 rounded-lg border border-gray-600 focus:border-green-500 w-full outline-none">
+                        <button id="btn-save-match" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors whitespace-nowrap">
+                            Salvar Partida
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabela de Estatísticas -->
+                <div class="bg-gray-800 rounded-xl border border-gray-700 shadow-lg overflow-hidden">
+                    <div class="p-5 border-b border-gray-700 bg-gray-800">
+                        <h3 class="text-lg font-semibold text-gray-200">Controle de Estatísticas</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-gray-300">
+                            <thead class="text-xs uppercase bg-gray-900 text-gray-400">
+                                <tr>
+                                    <th class="px-4 py-4">Jogador</th>
+                                    <th class="px-3 py-4 text-center">Gols</th>
+                                    <th class="px-3 py-4 text-center">Assist.</th>
+                                    <th class="px-3 py-4 text-center">Defesa</th>
+                                    <th class="px-4 py-4 text-center">Nota</th>
+                                    <th class="px-4 py-4 text-center">Overall</th>
+                                    <th class="px-4 py-4 text-center">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-players-list" class="divide-y divide-gray-700">
+                                <!-- Preenchido via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aba Avaliar -->
+            <div id="tab-avaliar" class="tab-content">
+                <h2 class="text-2xl font-bold text-white mb-2">Avaliações</h2>
+                <p class="text-sm text-gray-400 mb-6">Atribua notas de 0 a 10 aos jogadores desta partida.</p>
+                <div id="voting-status" class="bg-yellow-600/20 border border-yellow-600 text-yellow-500 p-4 rounded-lg mb-6 hidden">
+                    A janela de avaliação abre às quintas-feiras a partir das 22h.
+                </div>
+                <div id="players-voting-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+
+            <!-- Aba Ranking -->
+            <div id="tab-ranking" class="tab-content active">
+                <h2 class="text-2xl font-bold text-white mb-6">Rankings</h2>
+                <div class="bg-gray-800 rounded-xl border border-gray-700 shadow-lg overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-gray-300">
+                            <thead class="text-xs uppercase bg-gray-900 text-gray-400">
+                                <tr>
+                                    <th class="px-4 py-4">Pos</th>
+                                    <th class="px-4 py-4">Jogador</th>
+                                    <th class="px-4 py-4 text-center">Gols</th>
+                                    <th class="px-4 py-4 text-center">Overall</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ranking-list" class="divide-y divide-gray-700">
+                                <!-- Preenchido via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Navegação Inferior (Mobile-first) -->
+        <nav class="fixed bottom-0 w-full bg-gray-900 border-t border-gray-800 flex justify-around text-gray-400 text-xs py-3 z-20">
+            <div class="nav-item active flex flex-col items-center gap-1 cursor-pointer w-full text-center" onclick="switchTab('ranking')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                Ranking
+            </div>
+            <div class="nav-item flex flex-col items-center gap-1 cursor-pointer w-full text-center" onclick="switchTab('avaliar')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
+                Avaliar
+            </div>
+            <div id="nav-admin" class="nav-item flex flex-col items-center gap-1 cursor-pointer w-full text-center hidden" onclick="switchTab('admin')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                Admin
+            </div>
+        </nav>
+    </div>
+
+    <!-- Modal Novo Jogador -->
+    <div id="modal-player" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-800 p-6 rounded-xl w-full max-w-md border border-gray-700">
+            <h3 class="text-xl font-bold text-white mb-4">Cadastrar Jogador</h3>
+            <input type="text" id="new-player-name" placeholder="Nome do Jogador" class="w-full p-3 bg-gray-900 border border-gray-600 rounded-lg text-white mb-4 outline-none focus:border-green-500">
+            <div class="flex justify-end gap-3">
+                <button onclick="document.getElementById('modal-player').classList.add('hidden')" class="px-4 py-2 text-gray-400 hover:text-white">Cancelar</button>
+                <button id="btn-save-player" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold">Salvar</button>
             </div>
         </div>
-    </header>
+    </div>
 
-    <!-- Modal/Alert System -->
-    <div id="alertBox" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-[90%] max-w-sm p-4 rounded-lg shadow-lg hide transition-all duration-300 text-center text-sm font-medium"></div>
-
-    <!-- Main Content Area -->
-    <main class="flex-grow pb-20 max-w-md mx-auto w-full p-4">
-        
-        <!-- View: Login -->
-        <section id="view-login" class="flex flex-col items-center justify-center mt-10 space-y-6">
-            <div class="w-full bg-dark-surface p-6 rounded-2xl shadow-xl border border-dark-border">
-                <h2 class="text-2xl font-bold text-center mb-6">Entrar</h2>
-                <form id="loginForm" class="space-y-4">
-                    <div>
-                        <label class="block text-sm text-slate-400 mb-1">E-mail</label>
-                        <input type="email" id="email" class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 text-white focus:outline-none focus:border-brand-500" placeholder="seu@email.com" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm text-slate-400 mb-1">Senha</label>
-                        <input type="password" id="password" class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 text-white focus:outline-none focus:border-brand-500" placeholder="••••••••" required>
-                    </div>
-                    <button type="submit" id="loginSubmitBtn" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 rounded-lg transition-colors mt-2">
-                        Entrar
-                    </button>
-                </form>
-            </div>
-            <p class="text-xs text-slate-500 text-center">Somente o administrador pode cadastrar novos jogadores.</p>
-        </section>
-
-        <!-- View: Rankings -->
-        <section id="view-rankings" class="hide space-y-4">
-            <h2 class="text-xl font-bold mb-4 border-l-4 border-brand-500 pl-2">Classificação</h2>
-            
-            <!-- Filters -->
-            <div class="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide text-sm">
-                <button class="px-4 py-1.5 rounded-full bg-brand-900 text-brand-500 border border-brand-500 whitespace-nowrap">Total</button>
-                <button class="px-4 py-1.5 rounded-full bg-dark-surface text-slate-400 border border-dark-border whitespace-nowrap">Mensal</button>
-                <button class="px-4 py-1.5 rounded-full bg-dark-surface text-slate-400 border border-dark-border whitespace-nowrap">Semanal</button>
-            </div>
-
-            <!-- Table -->
-            <div class="bg-dark-surface rounded-xl overflow-hidden border border-dark-border">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-dark-bg text-slate-400 text-xs uppercase">
-                        <tr>
-                            <th class="px-3 py-3">Pos</th>
-                            <th class="px-3 py-3">Jogador</th>
-                            <th class="px-3 py-3 text-center">G</th>
-                            <th class="px-3 py-3 text-center">A</th>
-                            <th class="px-3 py-3 text-center text-brand-500 font-bold">OVR</th>
-                        </tr>
-                    </thead>
-                    <tbody id="rankingTableBody" class="divide-y divide-dark-border">
-                        <!-- Gerado via JS -->
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- View: Avaliações -->
-        <section id="view-ratings" class="hide space-y-4">
-            <h2 class="text-xl font-bold mb-2 border-l-4 border-brand-500 pl-2">Avaliações</h2>
-            <div id="ratingsStatus" class="bg-dark-surface p-4 rounded-xl border border-dark-border text-center text-slate-300">
-                <i class="fa-regular fa-clock text-3xl text-brand-500 mb-3 block"></i>
-                <p>As avaliações são liberadas <strong>toda quinta-feira, a partir das 22h</strong>.</p>
-            </div>
-            
-            <div id="ratingsFormArea" class="hide space-y-4">
-                <p class="text-sm text-slate-400">Dê uma nota de 0 a 10 para os jogadores da última partida.</p>
-                <div id="playersToRateList" class="space-y-3">
-                    <!-- Gerado via JS -->
-                </div>
-                <button id="submitRatingsBtn" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg">
-                    Enviar Avaliações
-                </button>
-            </div>
-        </section>
-
-        <!-- View: Profile -->
-        <section id="view-profile" class="hide space-y-6">
-            <h2 class="text-xl font-bold border-l-4 border-brand-500 pl-2">Meu Perfil</h2>
-            <div class="bg-dark-surface p-6 rounded-2xl border border-dark-border flex flex-col items-center">
-                <div class="w-24 h-24 bg-dark-bg rounded-full flex items-center justify-center border-4 border-brand-500 mb-4 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                    <span id="profileOvr" class="text-3xl font-bold text-white">0</span>
-                </div>
-                <h3 id="profileName" class="text-xl font-bold">Jogador</h3>
-                <p id="profileEmail" class="text-sm text-slate-400 mb-6">email@email.com</p>
-
-                <div class="grid grid-cols-3 gap-4 w-full text-center">
-                    <div class="bg-dark-bg p-3 rounded-xl">
-                        <div class="text-slate-400 text-xs uppercase mb-1">Gols</div>
-                        <div id="profileGoals" class="text-xl font-bold">0</div>
-                    </div>
-                    <div class="bg-dark-bg p-3 rounded-xl">
-                        <div class="text-slate-400 text-xs uppercase mb-1">Assists</div>
-                        <div id="profileAssists" class="text-xl font-bold">0</div>
-                    </div>
-                    <div class="bg-dark-bg p-3 rounded-xl">
-                        <div class="text-slate-400 text-xs uppercase mb-1">Nota Média</div>
-                        <div id="profileRating" class="text-xl font-bold text-brand-500">0.0</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- View: Admin -->
-        <section id="view-admin" class="hide space-y-6">
-            <h2 class="text-xl font-bold border-l-4 border-amber-500 pl-2 text-amber-500">Painel Admin</h2>
-            
-            <!-- Add Match Form -->
-            <div class="bg-dark-surface p-5 rounded-xl border border-dark-border">
-                <h3 class="font-bold mb-3"><i class="fa-solid fa-plus-circle mr-2"></i>Nova Partida</h3>
-                <div class="space-y-3">
-                    <input type="date" id="matchDate" class="w-full bg-dark-bg border border-dark-border rounded-lg p-2 text-white text-sm focus:outline-none">
-                    <button onclick="adminCreateMatch()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-medium py-2 rounded-lg text-sm transition">
-                        Registrar Partida
-                    </button>
-                </div>
-            </div>
-
-            <!-- Add Player Form -->
-            <div class="bg-dark-surface p-5 rounded-xl border border-dark-border">
-                <h3 class="font-bold mb-3"><i class="fa-solid fa-user-plus mr-2"></i>Cadastrar Jogador</h3>
-                <form id="addPlayerForm" class="space-y-3">
-                    <input type="text" id="newPlayerName" placeholder="Nome" class="w-full bg-dark-bg border border-dark-border rounded-lg p-2 text-white text-sm" required>
-                    <input type="email" id="newPlayerEmail" placeholder="E-mail" class="w-full bg-dark-bg border border-dark-border rounded-lg p-2 text-white text-sm" required>
-                    <button type="submit" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-medium py-2 rounded-lg text-sm transition">
-                        Criar Cadastro (Padrão: senha123)
-                    </button>
-                </form>
-            </div>
-            
-             <div class="bg-dark-surface p-5 rounded-xl border border-dark-border">
-                <h3 class="font-bold mb-3 text-slate-400 text-sm">Avisos</h3>
-                <p class="text-xs text-slate-500">Para simplificar este protótipo, a atribuição de estatísticas na partida e seleções profundas devem ser geridas no Console do Firebase ou expandindo este módulo admin.</p>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Bottom Navigation Bar -->
-    <nav id="bottomNav" class="bg-dark-surface border-t border-dark-border fixed bottom-0 w-full z-50 hide pb-safe">
-        <div class="max-w-md mx-auto flex justify-between items-center">
-            <button onclick="switchView('rankings')" class="flex-1 py-3 flex flex-col items-center text-slate-500 hover:text-brand-500 transition tab-btn" data-target="rankings">
-                <i class="fa-solid fa-trophy text-lg mb-1"></i>
-                <span class="text-[10px] uppercase font-semibold">Ranking</span>
-            </button>
-            <button onclick="switchView('ratings')" class="flex-1 py-3 flex flex-col items-center text-slate-500 hover:text-brand-500 transition tab-btn" data-target="ratings">
-                <i class="fa-solid fa-star text-lg mb-1"></i>
-                <span class="text-[10px] uppercase font-semibold">Avaliar</span>
-            </button>
-            <button onclick="switchView('profile')" class="flex-1 py-3 flex flex-col items-center text-slate-500 hover:text-brand-500 transition tab-btn" data-target="profile">
-                <i class="fa-solid fa-user text-lg mb-1"></i>
-                <span class="text-[10px] uppercase font-semibold">Perfil</span>
-            </button>
-            <button onclick="switchView('admin')" id="navAdminBtn" class="flex-1 py-3 flex flex-col items-center text-slate-500 hover:text-amber-500 transition tab-btn hide" data-target="admin">
-                <i class="fa-solid fa-shield-halved text-lg mb-1"></i>
-                <span class="text-[10px] uppercase font-semibold text-amber-500">Admin</span>
-            </button>
-        </div>
-    </nav>
-
+    <!-- SDKs do Firebase -->
     <script type="module">
-        // Importações do Firebase SDK
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs, doc, setDoc, getDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Configuração do ambiente e Firebase
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'pelada-app-default';
-        let firebaseConfig = {
-            // *** SUBSTITUA ESTAS CREDENCIAIS PELAS DO SEU PROJETO FIREBASE ***
-              apiKey: "AIzaSyAVBH-PP3o4K6S7jYsYXY87U0k3wWnNMu8",
-              authDomain: "pelada-pro-171ab.firebaseapp.com",
-              projectId: "pelada-pro-171ab",
-              storageBucket: "pelada-pro-171ab.firebasestorage.app",
-              messagingSenderId: "892360082828",
-              appId: "1:892360082828:web:4a7b107a0e7d24da9302a9",
-              measurementId: "G-RX9XS3E963"
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVBH-PP3o4K6S7jYsYXY87U0k3wWnNMu8",
+            authDomain: "pelada-pro-171ab.firebaseapp.com",
+            projectId: "pelada-pro-171ab",
+            storageBucket: "pelada-pro-171ab.firebasestorage.app",
+            messagingSenderId: "892360082828",
+            appId: "1:892360082828:web:4a7b107a0e7d24da9302a9",
+            measurementId: "G-RX9XS3E963"
         };
 
-        // Fallback para ambiente de teste/imersivo
-        if (typeof __firebase_config !== 'undefined') {
-            firebaseConfig = JSON.parse(__firebase_config);
-        }
-
-        // Inicialização
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Caminhos Base (Regra Restrita do ambiente ou sua coleção padrão)
-        const basePath = typeof __app_id !== 'undefined' ? `artifacts/${appId}/public/data/` : '';
-        const COL_PLAYERS = basePath + 'players';
-        const COL_MATCHES = basePath + 'matches';
-
-        // Estado Global
         let currentUser = null;
-        let isUserAdmin = false;
+        let isAdmin = false;
         let playersData = [];
 
-        // DOM Elements
-        const views = {
-            login: document.getElementById('view-login'),
-            rankings: document.getElementById('view-rankings'),
-            ratings: document.getElementById('view-ratings'),
-            profile: document.getElementById('view-profile'),
-            admin: document.getElementById('view-admin')
-        };
-        const bottomNav = document.getElementById('bottomNav');
-        const userInfo = document.getElementById('userInfo');
-        const navAdminBtn = document.getElementById('navAdminBtn');
+        // Elementos da UI
+        const loginScreen = document.getElementById('login-screen');
+        const appScreen = document.getElementById('app-screen');
+        const loginForm = document.getElementById('login-form');
+        const logoutBtn = document.getElementById('logout-btn');
+        const navAdmin = document.getElementById('nav-admin');
 
-        // Helpers de UI
-        function showAlert(msg, type = 'success') {
-            const box = document.getElementById('alertBox');
-            box.textContent = msg;
-            box.className = `fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] w-[90%] max-w-sm p-3 rounded-lg shadow-lg transition-all duration-300 text-center text-sm font-bold text-white ${type === 'error' ? 'bg-red-500' : 'bg-emerald-500'}`;
-            box.classList.remove('hide');
-            setTimeout(() => box.classList.add('hide'), 3000);
-        }
-
-        window.switchView = function(viewName) {
-            Object.values(views).forEach(v => v.classList.add('hide'));
-            if(views[viewName]) views[viewName].classList.remove('hide');
-            
-            // Update tabs
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                if(btn.dataset.target === viewName) {
-                    btn.classList.add('tab-active');
+        // Autenticação
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                isAdmin = user.email === 'admin@pelada.com';
+                document.getElementById('user-email-display').innerText = user.email;
+                loginScreen.classList.add('hidden');
+                appScreen.classList.remove('hidden');
+                
+                if (isAdmin) {
+                    navAdmin.classList.remove('hidden');
                 } else {
-                    btn.classList.remove('tab-active');
+                    navAdmin.classList.add('hidden');
+                    window.switchTab('ranking');
                 }
-            });
+                loadPlayers();
+            } else {
+                currentUser = null;
+                isAdmin = false;
+                loginScreen.classList.remove('hidden');
+                appScreen.classList.add('hidden');
+            }
+        });
 
-            if(viewName === 'rankings') loadRankings();
-            if(viewName === 'ratings') checkRatingsAvailability();
-            if(viewName === 'profile') loadProfile();
-        };
-
-        // Auth Logic
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const btn = document.getElementById('loginSubmitBtn');
-            btn.textContent = 'Carregando...';
-            btn.disabled = true;
-
-            try {
-                // Aqui tenta logar. Lembre-se que no seu Firebase real a regra de email precisa estar habilitada
-                await signInWithEmailAndPassword(auth, email, password);
-                showAlert('Login realizado com sucesso!');
-            } catch (error) {
-                console.error(error);
-                showAlert('Erro no login. Verifique as credenciais.', 'error');
-            } finally {
-                btn.textContent = 'Entrar';
-                btn.disabled = false;
-            }
-        });
-
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            signOut(auth);
-        });
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                // Hardcode admin check (Mude para o e-mail que desejar ser admin)
-                isUserAdmin = user.email === 'admin@pelada.com'; 
-                
-                document.getElementById('userNameDisplay').textContent = user.email.split('@')[0];
-                userInfo.classList.remove('hide');
-                bottomNav.classList.remove('hide');
-                
-                if(isUserAdmin) navAdminBtn.classList.remove('hide');
-                else navAdminBtn.classList.add('hide');
-
-                // Verifica se o usuário tem documento no DB, se não (e não é teste), criaria
-                // Mas a lógica pede que admin crie.
-                
-                window.switchView('rankings');
-            } else {
-                currentUser = null;
-                isUserAdmin = false;
-                userInfo.classList.add('hide');
-                bottomNav.classList.add('hide');
-                window.switchView('login');
-            }
-        });
-
-        // Data Fetching
-        async function fetchPlayers() {
-            if(!currentUser) return;
-            try {
-                const querySnapshot = await getDocs(collection(db, COL_PLAYERS));
-                playersData = [];
-                querySnapshot.forEach((doc) => {
-                    playersData.push({ id: doc.id, ...doc.data() });
+            signInWithEmailAndPassword(auth, email, password)
+                .catch(error => {
+                    document.getElementById('login-error').classList.remove('hidden');
+                    console.error("Login failed", error);
                 });
-                
-                // Calculo de Overall (Exemplo: Gols + Assists + Media Notas)
-                playersData = playersData.map(p => {
-                    let ovr = ((p.goals || 0) * 1.5) + ((p.assists || 0) * 1.2) + ((p.rating || 0) * 3);
-                    p.overall = Math.min(Math.round(ovr), 99); // max 99
-                    return p;
-                });
-            } catch (e) {
-                console.error("Erro ao buscar jogadores", e);
-            }
+        });
+
+        logoutBtn.addEventListener('click', () => signOut(auth));
+
+        // Controle de Abas (Global para acesso via HTML)
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            event.currentTarget.classList.add('active');
+        };
+
+        // Carregar e Renderizar Jogadores
+        async function loadPlayers() {
+            const querySnapshot = await getDocs(collection(db, "players"));
+            playersData = [];
+            querySnapshot.forEach((doc) => {
+                playersData.push({ id: doc.id, ...doc.data() });
+            });
+            renderAdminTable();
+            renderRanking();
+            renderVotingList();
         }
 
-        async function loadRankings() {
-            await fetchPlayers();
-            const tbody = document.getElementById('rankingTableBody');
+        // Tabela Administrativa
+        function renderAdminTable() {
+            const tbody = document.getElementById('admin-players-list');
+            if(!tbody) return;
             tbody.innerHTML = '';
-            
-            // Ordena por Overall
-            const sortedPlayers = [...playersData].sort((a, b) => (b.overall || 0) - (a.overall || 0));
 
-            sortedPlayers.forEach((p, index) => {
+            playersData.forEach(player => {
+                const goals = player.goals || 0;
+                const assists = player.assists || 0;
+                const defense = player.defense || 0;
+                const rating = player.rating ? player.rating.toFixed(1) : '-';
+                const overall = player.overall ? player.overall.toFixed(1) : '-';
+
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-dark-surface/50 transition";
+                tr.className = 'hover:bg-gray-750 transition-colors bg-gray-800';
                 tr.innerHTML = `
-                    <td class="px-3 py-3 text-slate-400 font-bold">${index + 1}º</td>
-                    <td class="px-3 py-3 font-medium">${p.name || 'Sem nome'}</td>
-                    <td class="px-3 py-3 text-center text-slate-400">${p.goals || 0}</td>
-                    <td class="px-3 py-3 text-center text-slate-400">${p.assists || 0}</td>
-                    <td class="px-3 py-3 text-center font-bold text-brand-500">${p.overall || 0}</td>
+                    <td class="px-4 py-3 font-medium text-white whitespace-nowrap">${player.name}</td>
+                    <td class="px-3 py-3 text-center"><input type="number" min="0" value="${goals}" id="gols-${player.id}" class="w-14 bg-gray-900 border border-gray-600 rounded p-1 text-center text-white outline-none focus:border-blue-500"></td>
+                    <td class="px-3 py-3 text-center"><input type="number" min="0" value="${assists}" id="assists-${player.id}" class="w-14 bg-gray-900 border border-gray-600 rounded p-1 text-center text-white outline-none focus:border-blue-500"></td>
+                    <td class="px-3 py-3 text-center"><input type="number" min="0" value="${defense}" id="defense-${player.id}" class="w-14 bg-gray-900 border border-gray-600 rounded p-1 text-center text-white outline-none focus:border-blue-500"></td>
+                    <td class="px-4 py-3 text-center font-bold text-yellow-400">${rating}</td>
+                    <td class="px-4 py-3 text-center font-bold text-green-400">${overall}</td>
+                    <td class="px-4 py-3 text-center">
+                        <button onclick="updatePlayerStats('${player.id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded shadow text-xs font-semibold uppercase transition-colors">Salvar</button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        function loadProfile() {
-            const me = playersData.find(p => p.email === currentUser.email);
-            if(me) {
-                document.getElementById('profileName').textContent = me.name || 'Jogador';
-                document.getElementById('profileEmail').textContent = me.email;
-                document.getElementById('profileOvr').textContent = me.overall || 0;
-                document.getElementById('profileGoals').textContent = me.goals || 0;
-                document.getElementById('profileAssists').textContent = me.assists || 0;
-                document.getElementById('profileRating').textContent = (me.rating || 0).toFixed(1);
-            } else {
-                document.getElementById('profileName').textContent = 'Admin / Não cadastrado no DB';
-                document.getElementById('profileEmail').textContent = currentUser.email;
-            }
-        }
-
-        function checkRatingsAvailability() {
-            const now = new Date();
-            const day = now.getDay(); // 0 = Dom, 4 = Qui
-            const hour = now.getHours();
-
-            const statusBox = document.getElementById('ratingsStatus');
-            const formArea = document.getElementById('ratingsFormArea');
-
-            // Regra: Quinta-feira (4) a partir das 22h, ou Sexta(5)
-            const isAvailable = (day === 4 && hour >= 22) || (day === 5);
-
-            if(isAvailable) {
-                statusBox.classList.add('hide');
-                formArea.classList.remove('hide');
-                renderRatingsForm();
-            } else {
-                statusBox.classList.remove('hide');
-                formArea.classList.add('hide');
-            }
-        }
-
-        function renderRatingsForm() {
-            const list = document.getElementById('playersToRateList');
-            list.innerHTML = '';
-            // Na vida real, pegaria só os que participaram da última partida. Aqui lista todos - o próprio.
-            playersData.filter(p => p.email !== currentUser.email).forEach(p => {
-                list.innerHTML += `
-                    <div class="flex items-center justify-between bg-dark-bg p-3 rounded-lg border border-dark-border">
-                        <span class="font-medium">${p.name}</span>
-                        <select class="bg-dark-surface border border-dark-border text-white rounded p-1 text-sm outline-none w-16">
-                            <option value="-">-</option>
-                            ${[...Array(11).keys()].map(n => `<option value="${n}">${n}</option>`).join('')}
-                        </select>
-                    </div>
-                `;
-            });
-        }
-
-        // Admin Functions
-        document.getElementById('addPlayerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if(!isUserAdmin) return;
-            const name = document.getElementById('newPlayerName').value;
-            const email = document.getElementById('newPlayerEmail').value;
+        // Atualização de Estatísticas (Global para acesso via HTML)
+        window.updatePlayerStats = async function(playerId) {
             try {
-                // Aqui o Admin cria a entrada no Firestore (Obs: o Auth deve ser feito fora ou via Cloud Functions no mundo real)
-                await setDoc(doc(collection(db, COL_PLAYERS), email), {
-                    name: name,
-                    email: email,
-                    goals: 0,
-                    assists: 0,
-                    rating: 0,
-                    role: 'player'
+                const goals = parseInt(document.getElementById(`gols-${playerId}`).value) || 0;
+                const assists = parseInt(document.getElementById(`assists-${playerId}`).value) || 0;
+                const defense = parseInt(document.getElementById(`defense-${playerId}`).value) || 0;
+                
+                // Exemplo de cálculo de Overall: Gols(x2) + Assists(x1.5) + Defesa(x1).
+                // A nota deve ser somada dinamicamente via backend, caso implementado.
+                const newOverall = (goals * 2) + (assists * 1.5) + (defense * 1);
+
+                const playerRef = doc(db, "players", playerId);
+                await updateDoc(playerRef, { goals, assists, defense, overall: newOverall });
+                
+                alert('Estatísticas atualizadas com sucesso.');
+                loadPlayers();
+            } catch (error) {
+                console.error('Erro na atualização:', error);
+                alert('Falha na comunicação com o banco de dados.');
+            }
+        };
+
+        // Novo Jogador
+        document.getElementById('btn-new-player').addEventListener('click', () => {
+            document.getElementById('modal-player').classList.remove('hidden');
+        });
+
+        document.getElementById('btn-save-player').addEventListener('click', async () => {
+            const name = document.getElementById('new-player-name').value;
+            if(!name) return;
+            try {
+                await addDoc(collection(db, "players"), {
+                    name: name, goals: 0, assists: 0, defense: 0, rating: 0, overall: 0, voteCount: 0
                 });
-                showAlert('Jogador cadastrado no banco de dados!');
-                document.getElementById('addPlayerForm').reset();
-            } catch (err) {
-                showAlert('Erro ao cadastrar', 'error');
-                console.error(err);
+                document.getElementById('modal-player').classList.add('hidden');
+                document.getElementById('new-player-name').value = '';
+                loadPlayers();
+            } catch (e) {
+                console.error("Erro ao adicionar documento: ", e);
             }
         });
 
-        window.adminCreateMatch = async function() {
-            const date = document.getElementById('matchDate').value;
-            if(!date) return showAlert('Escolha uma data', 'error');
-            try {
-                await addDoc(collection(db, COL_MATCHES), {
-                    date: date,
-                    status: 'open',
-                    createdAt: new Date().toISOString()
-                });
-                showAlert('Partida registrada com sucesso!');
-            } catch (err) {
-                showAlert('Erro ao registrar', 'error');
-            }
+        // Tabela de Ranking
+        function renderRanking() {
+            const tbody = document.getElementById('ranking-list');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            const sortedPlayers = [...playersData].sort((a, b) => (b.overall || 0) - (a.overall || 0));
+            
+            sortedPlayers.forEach((player, index) => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-700 hover:bg-gray-750 transition-colors bg-gray-800';
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-bold text-gray-400">${index + 1}º</td>
+                    <td class="px-4 py-3 font-medium text-white">${player.name}</td>
+                    <td class="px-4 py-3 text-center">${player.goals || 0}</td>
+                    <td class="px-4 py-3 text-center font-bold text-green-400">${player.overall ? player.overall.toFixed(1) : '0.0'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
+        // Renderização Simples de Votação (Mock)
+        function renderVotingList() {
+            const list = document.getElementById('players-voting-list');
+            if(!list) return;
+            list.innerHTML = '';
+            
+            playersData.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'bg-gray-800 p-4 rounded-xl border border-gray-700 flex justify-between items-center';
+                div.innerHTML = `
+                    <span class="font-medium text-white">${player.name}</span>
+                    <div class="flex items-center gap-2">
+                        <input type="number" min="0" max="10" placeholder="0-10" class="w-16 bg-gray-900 border border-gray-600 rounded p-2 text-center text-white outline-none focus:border-green-500">
+                        <button class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded transition-colors text-sm font-bold">OK</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
     </script>
 </body>
 </html>
