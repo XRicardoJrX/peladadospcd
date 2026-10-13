@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0F1A4A;--panel:#18266B;--line:#2B3C8F;--yel:#FFC93C;--chalk:#F2F5FF}
-body{background:var(--bg);color:var(--chalk);font-family:Barlow,system-ui,sans-serif;padding-bottom:5rem}
+body{background:var(--bg);color:var(--chalk);font-family:Barlow,system-ui,sans-serif;padding-bottom:2rem}
 h1,h2,h3,.num{font-family:'Barlow Condensed',sans-serif}
 .text-yel{color:var(--yel)}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px}
@@ -26,7 +26,7 @@ h1,h2,h3,.num{font-family:'Barlow Condensed',sans-serif}
 .av{width:56px;height:56px;border-radius:50%;margin:6px auto;display:grid;place-items:center;color:#fff;font:700 1.4rem 'Barlow Condensed'}
 dialog{background:var(--panel);color:var(--chalk);border:1px solid var(--line);border-radius:16px;padding:20px;width:min(92vw,440px)}
 dialog::backdrop{background:rgba(5,10,40,.78)}
-.nav{flex:1;padding:.7rem 0;font-weight:600;font-size:.8rem;opacity:.7}.nav.on{opacity:1;color:var(--yel);box-shadow:inset 0 3px 0 var(--yel)}
+.nav{flex:1;padding:.6rem 0;font-weight:600;font-size:.9rem;opacity:.7;border-bottom:3px solid transparent}.nav.on{opacity:1;color:var(--yel);border-color:var(--yel)}
 input[type=range]{accent-color:var(--yel)}
 .pitch{background:radial-gradient(circle at 50% 50%,transparent 0 60px,rgba(255,255,255,.12) 61px 63px,transparent 64px),linear-gradient(90deg,transparent calc(50% - 1px),rgba(255,255,255,.12) 0 calc(50% + 1px),transparent 0)}
 #weekbar::-webkit-scrollbar{display:none}
@@ -60,7 +60,13 @@ input[type=range]{accent-color:var(--yel)}
         <button data-a="logout" class="btn2 !py-1 text-sm">Sair</button>
       </div>
     </div>
-    <div id="weekbar" class="max-w-5xl mx-auto px-4 pb-3 flex gap-2 overflow-x-auto"></div>
+    <div class="max-w-5xl mx-auto px-4 flex gap-1">
+      <button class="nav" data-a="tab" data-v="ranking">🏆 Ranking</button>
+      <button class="nav" data-a="tab" data-v="matches">📅 Partidas</button>
+      <button class="nav" data-a="tab" data-v="vote">⭐ Avaliar</button>
+      <button class="nav hidden" id="nav-admin" data-a="tab" data-v="admin">⚙️ Admin</button>
+    </div>
+    <div id="weekbar" class="max-w-5xl mx-auto px-4 py-3 flex gap-2 overflow-x-auto"></div>
   </header>
 
   <main class="max-w-5xl mx-auto p-4">
@@ -68,16 +74,10 @@ input[type=range]{accent-color:var(--yel)}
     <div id="view"></div>
   </main>
 
-  <nav class="fixed bottom-0 inset-x-0 z-20 bg-[#0B1338] border-t border-[var(--line)] flex text-center">
-    <button class="nav" data-a="tab" data-v="ranking">🏆<br>Ranking</button>
-    <button class="nav" data-a="tab" data-v="matches">📅<br>Partidas</button>
-    <button class="nav" data-a="tab" data-v="vote">⭐<br>Avaliar</button>
-    <button class="nav hidden" id="nav-admin" data-a="tab" data-v="admin">⚙️<br>Admin</button>
-  </nav>
 </div>
 
 <dialog id="dlg"><div id="dlg-body"></div></dialog>
-<div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-24 z-50 bg-yel text-black font-semibold px-4 py-2 rounded-full hidden" style="background:var(--yel)"></div>
+<div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-8 z-50 bg-yel text-black font-semibold px-4 py-2 rounded-full hidden" style="background:var(--yel)"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
@@ -133,16 +133,36 @@ const tier = o => o == null ? 't0' : o >= 85 ? 't4' : o >= 75 ? 't3' : o >= 65 ?
 const empty = t => `<div class="panel p-8 text-center opacity-80">${t}</div>`;
 const toast = t => { const e = $('toast'); e.textContent = t; e.classList.remove('hidden'); clearTimeout(e._t); e._t = setTimeout(() => e.classList.add('hidden'), 2200); };
 
-const sticker = (p, i) => `<div class="stk ${tier(p.ovr)}">
-  <div class="flex justify-between items-start"><div><div class="num text-5xl font-extrabold leading-none">${p.ovr ?? '–'}</div><div class="text-[11px] font-semibold">Geral</div></div><div class="num text-xl font-bold opacity-70">${i + 1}º</div></div>
-  <div class="av" style="background:hsl(${hue(p.name)} 60% 36%)">${esc(ini(p.name))}</div>
-  <div class="num text-2xl font-bold text-center truncate">${esc(p.name)}</div>
-  <div class="grid grid-cols-4 text-center mt-2 gap-1">${[['Gols', p.g], ['Assist.', p.a], ['Defesas', p.d], ['Nota', p.rating == null ? '–' : p.rating.toFixed(1)]].map(([l, v]) => `<div><div class="num text-xl font-bold leading-none">${v}</div><div class="text-[10px] font-medium">${l}</div></div>`).join('')}</div>
+const avatar = (p, c = '') => p.photo ? `<img src="${p.photo}" alt="" class="${c} object-cover">` : `<div class="${c} grid place-items-center num font-bold text-3xl text-white" style="background:hsl(${hue(p.name)} 55% 34%)">${esc(ini(p.name))}</div>`;
+const bar = (l, v, max) => `<div class="flex items-center gap-2 text-[11px] font-medium"><span class="w-11">${l}</span><div class="flex-1 h-2 rounded bg-black/20"><div class="h-full rounded bg-[#14213D]" style="width:${max ? Math.min(100, v / max * 100) : 0}%"></div></div><b class="num text-base w-5 text-right">${v}</b></div>`;
+const val = (p, k) => p[k] == null ? '–' : k === 'rating' ? p.rating.toFixed(1) : p[k];
+const sticker = (p, i, mx) => `<div class="stk ${tier(p.ovr)} cursor-pointer" data-a="pl" data-v="${p.id}">
+  <div class="relative">${avatar(p, 'w-full aspect-square rounded-xl')}
+    <div class="absolute top-1 left-2 num text-5xl font-extrabold text-white" style="text-shadow:0 2px 6px #000a">${p.ovr ?? '–'}</div>
+    <div class="absolute top-2 right-2 num text-sm bg-black/55 text-white rounded-full px-2">${i + 1}º</div>
+    ${p.rating != null ? `<div class="absolute bottom-1 right-2 num text-xl font-bold text-white" style="text-shadow:0 2px 6px #000a">⭐ ${p.rating.toFixed(1)}</div>` : ''}</div>
+  <div class="num text-2xl font-bold truncate mt-2">${esc(p.name)}</div>
+  <div class="space-y-1 mt-1 mb-1">${bar('Gols', p.g, mx.g)}${bar('Assist.', p.a, mx.a)}${bar('Defesas', p.d, mx.d)}</div>
 </div>`;
+const podium = s => `<div class="grid grid-cols-3 gap-3 items-end mb-6 max-w-md mx-auto">${[1, 0, 2].filter(i => s[i]).map(i => { const p = s[i]; return `<div class="text-center cursor-pointer" data-a="pl" data-v="${p.id}">
+  <div class="text-2xl">${['🥇', '🥈', '🥉'][i]}</div>${avatar(p, 'rounded-full mx-auto border-4 ' + (i ? 'w-16 h-16 border-slate-300' : 'w-24 h-24 border-[var(--yel)]'))}
+  <div class="num text-lg font-bold truncate">${esc(p.name)}</div><div class="num text-yel text-2xl font-bold">${val(p, S.sort)}</div>
+  <div class="rounded-t-lg mt-1 bg-[var(--line)]" style="height:${[44, 30, 22][i]}px"></div></div>`; }).join('')}</div>`;
+
+function detail(id) {
+  const p = table('all').find(x => x.id === id); if (!p) return;
+  const rows = weeks().map(w => { const t = table(w).find(x => x.id === id); return t && (t.g + t.a + t.d || t.rating != null) ? `<tr class="border-t border-[var(--line)]"><td class="py-1.5">${wLabel(w)}</td><td class="text-center">${t.g}</td><td class="text-center">${t.a}</td><td class="text-center">${t.d}</td><td class="text-center">${val(t, 'rating')}</td></tr>` : ''; }).join('');
+  $('dlg-body').innerHTML = `<div class="flex items-center gap-4 mb-4">${avatar(p, 'w-20 h-20 rounded-full shrink-0')}<div class="min-w-0"><div class="num text-3xl font-bold truncate">${esc(p.name)}</div><div class="num text-yel text-xl">Geral ${p.ovr ?? '–'}</div></div></div>
+  <div class="grid grid-cols-4 gap-2 text-center mb-4">${[['Gols', p.g], ['Assist.', p.a], ['Defesas', p.d], ['Nota', val(p, 'rating')]].map(([l, v]) => `<div class="panel py-2"><div class="num text-2xl font-bold">${v}</div><div class="text-xs opacity-70">${l}</div></div>`).join('')}</div>
+  <table class="w-full text-sm"><thead><tr class="opacity-70 text-left"><th>Semana</th><th class="text-center">Gols</th><th class="text-center">Ass.</th><th class="text-center">Def.</th><th class="text-center">Nota</th></tr></thead><tbody>${rows || '<tr><td colspan="5" class="py-2 opacity-70">Ainda sem dados por semana.</td></tr>'}</tbody></table>
+  <button data-a="closedlg" class="btn2 mt-4 w-full">Fechar</button>`;
+  $('dlg').showModal();
+}
+const resize = f => new Promise(r => { const i = new Image(); i.onload = () => { const q = Math.min(i.width, i.height), o = Math.min(320, q), c = document.createElement('canvas'); c.width = c.height = o; c.getContext('2d').drawImage(i, (i.width - q) / 2, (i.height - q) / 2, q, q, 0, 0, o, o); r(c.toDataURL('image/jpeg', .8)); }; i.src = URL.createObjectURL(f); });
 
 const leader = (rows, k, label, icon, f) => {
   const r = [...rows].sort((a, b) => (b[k] ?? -1) - (a[k] ?? -1))[0];
-  return r && r[k] > 0 ? `<div class="panel p-3"><div class="text-xs opacity-80">${icon} ${label}</div><div class="num text-xl font-bold truncate">${esc(r.name)}</div><div class="num text-yel text-3xl font-bold leading-none">${f(r[k])}</div></div>` : '';
+  return r && r[k] > 0 ? `<div class="panel p-3 flex items-center gap-3">${avatar(r, 'w-14 h-14 rounded-full shrink-0')}<div class="min-w-0"><div class="text-xs opacity-80">${icon} ${label}</div><div class="num text-xl font-bold truncate">${esc(r.name)}</div><div class="num text-yel text-2xl font-bold leading-none">${f(r[k])}</div></div></div>` : '';
 };
 
 /* ---------- Telas ---------- */
@@ -151,11 +171,12 @@ function rRanking() {
   if (!rows.length) return empty('Nenhum jogador cadastrado ainda.');
   const keys = [['ovr', 'Geral'], ['g', 'Gols'], ['a', 'Assist.'], ['d', 'Defesas'], ['rating', 'Nota']];
   const sorted = [...rows].sort((a, b) => (b[S.sort] ?? -1) - (a[S.sort] ?? -1) || a.name.localeCompare(b.name));
-  return `<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+  const mx = { g: Math.max(...rows.map(r => r.g)), a: Math.max(...rows.map(r => r.a)), d: Math.max(...rows.map(r => r.d)) };
+  return `<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-5">
     ${leader(rows, 'g', 'Artilheiro', '⚽', v => v + ' gols')}${leader(rows, 'a', 'Garçom', '🎯', v => v + ' assist.')}
     ${leader(rows, 'd', 'Paredão', '🧤', v => v + ' defesas')}${leader(rows, 'rating', 'Melhor nota', '⭐', v => v.toFixed(1))}</div>
   <div class="flex gap-2 mb-4 overflow-x-auto">${keys.map(([k, l]) => `<button data-a="sort" data-v="${k}" class="chip ${S.sort === k ? 'on' : ''}">Ordenar por ${l.toLowerCase()}</button>`).join('')}</div>
-  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">${sorted.map(sticker).join('')}</div>`;
+  ${podium(sorted)}<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">${sorted.map((p, i) => sticker(p, i, mx)).join('')}</div>`;
 }
 
 function rMatches() {
@@ -212,8 +233,8 @@ function rAdmin() {
 
 const TITLES = { ranking: 'Ranking', matches: 'Partidas', vote: 'Avaliar a galera', admin: 'Painel do admin' };
 const typing = () => document.activeElement?.matches?.('[data-w],.rate,#newweek,#m-date,#m-ta,#m-sa,#m-sb,#m-tb');
-function render() {
-  if (!user || typing()) return;
+function render(force) {
+  if (!user || (!force && typing())) return;
   if (S.tab === 'admin' && !isAdmin) S.tab = 'ranking';
   $('who').textContent = user.email;
   $('nav-admin').classList.toggle('hidden', !isAdmin);
@@ -221,7 +242,8 @@ function render() {
     weeks().map(w => `<button data-a="week" data-v="${w}" class="chip ${S.week === w ? 'on' : ''}">${wLabel(w)}${w === thisWeek() ? ' (atual)' : ''}</button>`).join('');
   document.querySelectorAll('.nav').forEach(n => n.classList.toggle('on', n.dataset.v === S.tab));
   $('title').textContent = TITLES[S.tab];
-  $('view').innerHTML = { ranking: rRanking, matches: rMatches, vote: rVote, admin: rAdmin }[S.tab]();
+  try { $('view').innerHTML = { ranking: rRanking, matches: rMatches, vote: rVote, admin: rAdmin }[S.tab](); }
+  catch (err) { console.error(err); $('view').innerHTML = empty('Erro ao montar a tela: ' + esc(err.message)); }
 }
 
 /* ---------- Jogador (modal) ---------- */
@@ -231,6 +253,7 @@ function playerModal(id) {
   $('dlg-body').innerHTML = `<h3 class="text-2xl font-bold mb-2">${id ? 'Editar jogador' : 'Novo jogador'}</h3>
     <label class="lbl">Nome<input id="p-name" class="inp w-full" value="${esc(p.name)}"></label>
     <label class="lbl">E-mail de login do jogador (opcional)<input id="p-email" type="email" class="inp w-full" value="${esc(p.email)}"></label>
+    <label class="lbl">Foto (opcional)<input id="p-photo" type="file" accept="image/*" class="inp w-full"></label>
     <div class="text-xs opacity-70 mt-4">Acumulado anterior: dados de antes do controle por semana. Aparecem só na visão Geral.</div>
     <div class="grid grid-cols-3 gap-2">${[['goals', 'Gols'], ['assists', 'Assist.'], ['defense', 'Defesas']].map(([k, l]) => `<label class="lbl">${l}<input id="p-${k}" type="number" min="0" class="inp w-full" value="${p[k] || 0}"></label>`).join('')}</div>
     <div class="flex justify-end gap-2 mt-5"><button data-a="closedlg" class="btn2">Cancelar</button><button data-a="savep" class="btn">Salvar jogador</button></div>`;
@@ -248,6 +271,7 @@ document.addEventListener('click', async e => {
     else if (a === 'sort') S.sort = v;
     else if (a === 'sub') S.sub = v;
     else if (a === 'logout') return signOut(auth);
+    else if (a === 'pl') return detail(v);
     else if (a === 'openweek') { const d = $('newweek').value; if (!d) return toast('Escolha uma data'); const w = monday(d); extra.push(w); S.week = w; }
     else if (a === 'savew') {
       const w = curW(), b = writeBatch(db);
@@ -272,11 +296,12 @@ document.addEventListener('click', async e => {
     else if (a === 'savep') {
       const d = { name: $('p-name').value.trim(), email: $('p-email').value.trim().toLowerCase(), goals: int('p-goals'), assists: int('p-assists'), defense: int('p-defense') };
       if (!d.name) return toast('Informe o nome');
+      const f = $('p-photo').files[0]; if (f) d.photo = await resize(f);
       dlgPid ? await updateDoc(doc(db, 'players', dlgPid), d) : await addDoc(collection(db, 'players'), { ...d, createdAt: Date.now() });
       $('dlg').close(); toast('Jogador salvo');
     }
   } catch (err) { console.error(err); toast('Erro: ' + (err.code || err.message)); }
-  render();
+  render(true);
 });
 
 document.addEventListener('input', e => {
