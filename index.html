@@ -108,7 +108,7 @@ const monday = s => { const d = new Date(s + 'T12:00:00'); d.setDate(d.getDate()
 const fmt = s => { const [, m, d] = s.split('-'); return d + '/' + m; };
 const wLabel = w => { const e = new Date(w + 'T12:00:00'); e.setDate(e.getDate() + 6); return fmt(w) + ' a ' + fmt(iso(e)); };
 const thisWeek = () => monday(iso(new Date()));
-const weeks = () => [...new Set([thisWeek(), ...extra, ...matches.map(m => m.weekId), ...stats.map(s => s.weekId), ...ratings.map(r => r.weekId)])].sort().reverse();
+const weeks = () => [...new Set([thisWeek(), ...extra, ...matches.map(m => m.weekId), ...stats.map(s => s.weekId), ...ratings.map(r => r.weekId)].filter(Boolean))].sort().reverse();
 const curW = () => S.week === 'all' ? thisWeek() : S.week;
 const sp = () => [...players].sort((a, b) => a.name.localeCompare(b.name));
 
