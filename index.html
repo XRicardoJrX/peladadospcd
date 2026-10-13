@@ -1,365 +1,322 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pelada Pro - Gerenciamento e Estatísticas</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background-color: #111827; color: #f3f4f6; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .nav-item.active { color: #10b981; border-top: 2px solid #10b981; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pelada Pro</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0F1A4A;--panel:#18266B;--line:#2B3C8F;--yel:#FFC93C;--chalk:#F2F5FF}
+body{background:var(--bg);color:var(--chalk);font-family:Barlow,system-ui,sans-serif;padding-bottom:5rem}
+h1,h2,h3,.num{font-family:'Barlow Condensed',sans-serif}
+.text-yel{color:var(--yel)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px}
+.chip{padding:.4rem .9rem;border-radius:999px;border:1px solid var(--line);white-space:nowrap;font-weight:600;font-size:.85rem}
+.chip.on{background:var(--yel);color:#161616;border-color:var(--yel)}
+.btn{background:var(--yel);color:#161616;font-weight:700;border-radius:10px;padding:.65rem 1.1rem}
+.btn2{border:1px solid var(--line);border-radius:10px;padding:.5rem .9rem;font-weight:600}
+.inp{background:#0B1338;border:1px solid var(--line);border-radius:8px;padding:.55rem .7rem;color:var(--chalk);min-width:0}
+.inp:focus,.btn:focus-visible,.btn2:focus-visible,.chip:focus-visible{outline:2px solid var(--yel);outline-offset:2px}
+.lbl{display:block;font-size:.8rem;margin-top:.6rem}.lbl .inp{margin-top:.25rem}
+.stk{border-radius:16px 16px 44px 16px;padding:12px;color:#14213D;box-shadow:0 6px 0 rgba(0,0,0,.28);transition:transform .15s}
+.stk:hover{transform:translateY(-3px)}
+.t0{background:#6B78B8}.t1{background:linear-gradient(160deg,#E2A878,#A8693A)}.t2{background:linear-gradient(160deg,#F1F4FC,#A9B4D4)}
+.t3{background:linear-gradient(160deg,#FFE08A,#E3A71B)}.t4{background:linear-gradient(160deg,#8FF5D8,#3B9DFF)}
+.av{width:56px;height:56px;border-radius:50%;margin:6px auto;display:grid;place-items:center;color:#fff;font:700 1.4rem 'Barlow Condensed'}
+dialog{background:var(--panel);color:var(--chalk);border:1px solid var(--line);border-radius:16px;padding:20px;width:min(92vw,440px)}
+dialog::backdrop{background:rgba(5,10,40,.78)}
+.nav{flex:1;padding:.7rem 0;font-weight:600;font-size:.8rem;opacity:.7}.nav.on{opacity:1;color:var(--yel);box-shadow:inset 0 3px 0 var(--yel)}
+input[type=range]{accent-color:var(--yel)}
+.pitch{background:radial-gradient(circle at 50% 50%,transparent 0 60px,rgba(255,255,255,.12) 61px 63px,transparent 64px),linear-gradient(90deg,transparent calc(50% - 1px),rgba(255,255,255,.12) 0 calc(50% + 1px),transparent 0)}
+#weekbar::-webkit-scrollbar{display:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
 </head>
-<body class="pb-20">
+<body>
 
-    <!-- Tela de Login -->
-    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4 bg-gray-900">
-        <div class="bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-md border border-gray-700">
-            <h1 class="text-3xl font-bold text-center mb-6 text-white">Pelada Pro</h1>
-            <div id="login-error" class="hidden bg-red-600 text-white p-3 rounded mb-4 text-sm text-center">Erro de autenticação. Verifique as credenciais.</div>
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-300">E-mail</label>
-                    <input type="email" id="email" class="mt-1 w-full p-3 bg-gray-900 border border-gray-600 rounded-lg text-white focus:ring-green-500 focus:border-green-500 outline-none" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-300">Senha</label>
-                    <input type="password" id="password" class="mt-1 w-full p-3 bg-gray-900 border border-gray-600 rounded-lg text-white focus:ring-green-500 focus:border-green-500 outline-none" required>
-                </div>
-                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition-colors">Entrar</button>
-            </form>
-        </div>
+<!-- Login -->
+<div id="login-screen" class="min-h-screen flex items-center justify-center p-4 pitch">
+  <div class="panel p-8 w-full max-w-md">
+    <h1 class="text-5xl font-extrabold text-yel">Pelada Pro</h1>
+    <p class="opacity-80 mt-1 mb-6">Gols, assistências, defesas e notas da galera.</p>
+    <div id="login-error" class="hidden bg-red-500/20 border border-red-400 text-red-100 p-3 rounded-lg mb-4 text-sm"></div>
+    <form id="login-form" class="space-y-3">
+      <label class="lbl">E-mail<input type="email" id="email" class="inp w-full" required autocomplete="email"></label>
+      <label class="lbl">Senha<input type="password" id="password" class="inp w-full" required minlength="6" autocomplete="current-password"></label>
+      <button type="submit" id="login-btn" class="btn w-full mt-2">Entrar</button>
+    </form>
+    <button id="toggle-mode" class="text-sm underline opacity-80 mt-4">Primeira vez aqui? Criar conta</button>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app-screen" class="hidden">
+  <header class="sticky top-0 z-20 bg-[#0B1338]/95 backdrop-blur border-b border-[var(--line)]">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      <h1 class="text-3xl font-extrabold text-yel leading-none">Pelada Pro</h1>
+      <div class="flex items-center gap-3 min-w-0">
+        <span id="who" class="text-xs opacity-70 truncate"></span>
+        <button data-a="logout" class="btn2 !py-1 text-sm">Sair</button>
+      </div>
     </div>
+    <div id="weekbar" class="max-w-5xl mx-auto px-4 pb-3 flex gap-2 overflow-x-auto"></div>
+  </header>
 
-    <!-- Aplicação Principal -->
-    <div id="app-screen" class="hidden">
-        <!-- Cabeçalho -->
-        <header class="bg-gray-800 p-4 shadow-md flex justify-between items-center border-b border-gray-700 sticky top-0 z-10">
-            <h1 class="text-xl font-bold text-green-500">Pelada Pro</h1>
-            <div class="flex items-center gap-4">
-                <span id="user-email-display" class="text-sm text-gray-400"></span>
-                <button id="logout-btn" class="text-sm bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-white transition-colors">Sair</button>
-            </div>
-        </header>
+  <main class="max-w-5xl mx-auto p-4">
+    <h2 id="title" class="text-3xl font-bold mb-4"></h2>
+    <div id="view"></div>
+  </main>
 
-        <!-- Conteúdo das Abas -->
-        <main class="p-4 max-w-5xl mx-auto">
-            
-            <!-- Aba Admin -->
-            <div id="tab-admin" class="tab-content">
-                <div class="flex justify-between items-center border-b border-gray-700 pb-4 mb-6">
-                    <h2 class="text-2xl font-bold text-white">Painel Administrativo</h2>
-                    <button id="btn-new-player" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors text-sm">
-                        + Jogador
-                    </button>
-                </div>
+  <nav class="fixed bottom-0 inset-x-0 z-20 bg-[#0B1338] border-t border-[var(--line)] flex text-center">
+    <button class="nav" data-a="tab" data-v="ranking">🏆<br>Ranking</button>
+    <button class="nav" data-a="tab" data-v="matches">📅<br>Partidas</button>
+    <button class="nav" data-a="tab" data-v="vote">⭐<br>Avaliar</button>
+    <button class="nav hidden" id="nav-admin" data-a="tab" data-v="admin">⚙️<br>Admin</button>
+  </nav>
+</div>
 
-                <!-- Formulário Nova Partida -->
-                <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-lg mb-6">
-                    <h3 class="text-lg font-semibold text-gray-200 mb-4">Registro de Partida</h3>
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <input type="date" id="match-date" class="bg-gray-900 text-white p-3 rounded-lg border border-gray-600 focus:border-green-500 w-full outline-none">
-                        <input type="text" id="match-result" placeholder="Resultado (ex: Time A 5 x 4 Time B)" class="bg-gray-900 text-white p-3 rounded-lg border border-gray-600 focus:border-green-500 w-full outline-none">
-                        <button id="btn-save-match" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors whitespace-nowrap">
-                            Salvar Partida
-                        </button>
-                    </div>
-                </div>
+<dialog id="dlg"><div id="dlg-body"></div></dialog>
+<div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-24 z-50 bg-yel text-black font-semibold px-4 py-2 rounded-full hidden" style="background:var(--yel)"></div>
 
-                <!-- Tabela de Estatísticas -->
-                <div class="bg-gray-800 rounded-xl border border-gray-700 shadow-lg overflow-hidden">
-                    <div class="p-5 border-b border-gray-700 bg-gray-800">
-                        <h3 class="text-lg font-semibold text-gray-200">Controle de Estatísticas</h3>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm text-gray-300">
-                            <thead class="text-xs uppercase bg-gray-900 text-gray-400">
-                                <tr>
-                                    <th class="px-4 py-4">Jogador</th>
-                                    <th class="px-3 py-4 text-center">Gols</th>
-                                    <th class="px-3 py-4 text-center">Assist.</th>
-                                    <th class="px-3 py-4 text-center">Defesa</th>
-                                    <th class="px-4 py-4 text-center">Nota</th>
-                                    <th class="px-4 py-4 text-center">Overall</th>
-                                    <th class="px-4 py-4 text-center">Ação</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-players-list" class="divide-y divide-gray-700">
-                                <!-- Preenchido via JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc, updateDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-            <!-- Aba Avaliar -->
-            <div id="tab-avaliar" class="tab-content">
-                <h2 class="text-2xl font-bold text-white mb-2">Avaliações</h2>
-                <p class="text-sm text-gray-400 mb-6">Atribua notas de 0 a 10 aos jogadores desta partida.</p>
-                <div id="voting-status" class="bg-yellow-600/20 border border-yellow-600 text-yellow-500 p-4 rounded-lg mb-6 hidden">
-                    A janela de avaliação abre às quintas-feiras a partir das 22h.
-                </div>
-                <div id="players-voting-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Preenchido via JS -->
-                </div>
-            </div>
+const ADMIN_EMAIL = 'admin@pelada.com';
+const app = initializeApp({
+  apiKey: "AIzaSyAVBH-PP3o4K6S7jYsYXY87U0k3wWnNMu8",
+  authDomain: "pelada-pro-171ab.firebaseapp.com",
+  projectId: "pelada-pro-171ab",
+  storageBucket: "pelada-pro-171ab.firebasestorage.app",
+  messagingSenderId: "892360082828",
+  appId: "1:892360082828:web:4a7b107a0e7d24da9302a9",
+  measurementId: "G-RX9XS3E963"
+});
+const auth = getAuth(app), db = getFirestore(app);
 
-            <!-- Aba Ranking -->
-            <div id="tab-ranking" class="tab-content active">
-                <h2 class="text-2xl font-bold text-white mb-6">Rankings</h2>
-                <div class="bg-gray-800 rounded-xl border border-gray-700 shadow-lg overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm text-gray-300">
-                            <thead class="text-xs uppercase bg-gray-900 text-gray-400">
-                                <tr>
-                                    <th class="px-4 py-4">Pos</th>
-                                    <th class="px-4 py-4">Jogador</th>
-                                    <th class="px-4 py-4 text-center">Gols</th>
-                                    <th class="px-4 py-4 text-center">Overall</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ranking-list" class="divide-y divide-gray-700">
-                                <!-- Preenchido via JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let user = null, isAdmin = false, players = [], stats = [], matches = [], ratings = [], extra = [], unsubs = [], dlgPid = null;
+const S = { tab: 'ranking', week: 'all', sort: 'ovr', sub: 'stats', signup: false };
 
-        </main>
+/* ---------- Datas e semanas (semana começa na segunda) ---------- */
+const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const monday = s => { const d = new Date(s + 'T12:00:00'); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return iso(d); };
+const fmt = s => { const [, m, d] = s.split('-'); return d + '/' + m; };
+const wLabel = w => { const e = new Date(w + 'T12:00:00'); e.setDate(e.getDate() + 6); return fmt(w) + ' a ' + fmt(iso(e)); };
+const thisWeek = () => monday(iso(new Date()));
+const weeks = () => [...new Set([thisWeek(), ...extra, ...matches.map(m => m.weekId), ...stats.map(s => s.weekId), ...ratings.map(r => r.weekId)])].sort().reverse();
+const curW = () => S.week === 'all' ? thisWeek() : S.week;
+const sp = () => [...players].sort((a, b) => a.name.localeCompare(b.name));
 
-        <!-- Navegação Inferior (Mobile-first) -->
-        <nav class="fixed bottom-0 w-full bg-gray-900 border-t border-gray-800 flex justify-around text-gray-400 text-xs py-3 z-20">
-            <div class="nav-item active flex flex-col items-center gap-1 cursor-pointer w-full text-center" onclick="switchTab('ranking')">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                Ranking
-            </div>
-            <div class="nav-item flex flex-col items-center gap-1 cursor-pointer w-full text-center" onclick="switchTab('avaliar')">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
-                Avaliar
-            </div>
-            <div id="nav-admin" class="nav-item flex flex-col items-center gap-1 cursor-pointer w-full text-center hidden" onclick="switchTab('admin')">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                Admin
-            </div>
-        </nav>
-    </div>
+/* ---------- Cálculo: totais, nota média e overall ---------- */
+const OVR = { base: 50, ratingDefault: 6, ratingWeight: 7, goal: 3, assist: 2, defense: 1, perfCap: 15, perfWeight: 2 };
+function table(w) {
+  return players.map(p => {
+    let g = 0, a = 0, d = 0, rounds = 0;
+    if (w === 'all') { g = p.goals || 0; a = p.assists || 0; d = p.defense || 0; if (g + a + d) rounds = 1; } // acumulado anterior
+    stats.filter(s => s.playerId === p.id && (w === 'all' || s.weekId === w)).forEach(s => { g += s.goals || 0; a += s.assists || 0; d += s.defense || 0; rounds++; });
+    const rs = ratings.filter(r => r.playerId === p.id && (w === 'all' || r.weekId === w));
+    const rating = rs.length ? rs.reduce((t, r) => t + r.value, 0) / rs.length : null;
+    const perf = rounds ? Math.min(OVR.perfCap, (g * OVR.goal + a * OVR.assist + d * OVR.defense) / rounds) : 0;
+    const ovr = (rounds || rs.length) ? Math.max(30, Math.min(99, Math.round(OVR.base + ((rating ?? OVR.ratingDefault) - 5) * OVR.ratingWeight + perf * OVR.perfWeight))) : null;
+    return { ...p, g, a, d, rating, votes: rs.length, ovr };
+  });
+}
 
-    <!-- Modal Novo Jogador -->
-    <div id="modal-player" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50">
-        <div class="bg-gray-800 p-6 rounded-xl w-full max-w-md border border-gray-700">
-            <h3 class="text-xl font-bold text-white mb-4">Cadastrar Jogador</h3>
-            <input type="text" id="new-player-name" placeholder="Nome do Jogador" class="w-full p-3 bg-gray-900 border border-gray-600 rounded-lg text-white mb-4 outline-none focus:border-green-500">
-            <div class="flex justify-end gap-3">
-                <button onclick="document.getElementById('modal-player').classList.add('hidden')" class="px-4 py-2 text-gray-400 hover:text-white">Cancelar</button>
-                <button id="btn-save-player" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold">Salvar</button>
-            </div>
-        </div>
-    </div>
+/* ---------- Visual ---------- */
+const hue = n => [...String(n)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
+const ini = n => String(n).trim().split(/\s+/).slice(0, 2).map(x => x[0]).join('').toUpperCase();
+const tier = o => o == null ? 't0' : o >= 85 ? 't4' : o >= 75 ? 't3' : o >= 65 ? 't2' : 't1';
+const empty = t => `<div class="panel p-8 text-center opacity-80">${t}</div>`;
+const toast = t => { const e = $('toast'); e.textContent = t; e.classList.remove('hidden'); clearTimeout(e._t); e._t = setTimeout(() => e.classList.add('hidden'), 2200); };
 
-    <!-- SDKs do Firebase -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs, doc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+const sticker = (p, i) => `<div class="stk ${tier(p.ovr)}">
+  <div class="flex justify-between items-start"><div><div class="num text-5xl font-extrabold leading-none">${p.ovr ?? '–'}</div><div class="text-[11px] font-semibold">Geral</div></div><div class="num text-xl font-bold opacity-70">${i + 1}º</div></div>
+  <div class="av" style="background:hsl(${hue(p.name)} 60% 36%)">${esc(ini(p.name))}</div>
+  <div class="num text-2xl font-bold text-center truncate">${esc(p.name)}</div>
+  <div class="grid grid-cols-4 text-center mt-2 gap-1">${[['Gols', p.g], ['Assist.', p.a], ['Defesas', p.d], ['Nota', p.rating == null ? '–' : p.rating.toFixed(1)]].map(([l, v]) => `<div><div class="num text-xl font-bold leading-none">${v}</div><div class="text-[10px] font-medium">${l}</div></div>`).join('')}</div>
+</div>`;
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAVBH-PP3o4K6S7jYsYXY87U0k3wWnNMu8",
-            authDomain: "pelada-pro-171ab.firebaseapp.com",
-            projectId: "pelada-pro-171ab",
-            storageBucket: "pelada-pro-171ab.firebasestorage.app",
-            messagingSenderId: "892360082828",
-            appId: "1:892360082828:web:4a7b107a0e7d24da9302a9",
-            measurementId: "G-RX9XS3E963"
-        };
+const leader = (rows, k, label, icon, f) => {
+  const r = [...rows].sort((a, b) => (b[k] ?? -1) - (a[k] ?? -1))[0];
+  return r && r[k] > 0 ? `<div class="panel p-3"><div class="text-xs opacity-80">${icon} ${label}</div><div class="num text-xl font-bold truncate">${esc(r.name)}</div><div class="num text-yel text-3xl font-bold leading-none">${f(r[k])}</div></div>` : '';
+};
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+/* ---------- Telas ---------- */
+function rRanking() {
+  const rows = table(S.week);
+  if (!rows.length) return empty('Nenhum jogador cadastrado ainda.');
+  const keys = [['ovr', 'Geral'], ['g', 'Gols'], ['a', 'Assist.'], ['d', 'Defesas'], ['rating', 'Nota']];
+  const sorted = [...rows].sort((a, b) => (b[S.sort] ?? -1) - (a[S.sort] ?? -1) || a.name.localeCompare(b.name));
+  return `<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+    ${leader(rows, 'g', 'Artilheiro', '⚽', v => v + ' gols')}${leader(rows, 'a', 'Garçom', '🎯', v => v + ' assist.')}
+    ${leader(rows, 'd', 'Paredão', '🧤', v => v + ' defesas')}${leader(rows, 'rating', 'Melhor nota', '⭐', v => v.toFixed(1))}</div>
+  <div class="flex gap-2 mb-4 overflow-x-auto">${keys.map(([k, l]) => `<button data-a="sort" data-v="${k}" class="chip ${S.sort === k ? 'on' : ''}">Ordenar por ${l.toLowerCase()}</button>`).join('')}</div>
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">${sorted.map(sticker).join('')}</div>`;
+}
 
-        let currentUser = null;
-        let isAdmin = false;
-        let playersData = [];
+function rMatches() {
+  const ms = matches.filter(m => S.week === 'all' || m.weekId === S.week).sort((a, b) => b.date.localeCompare(a.date));
+  if (!ms.length) return empty('Nenhuma partida registrada nesta semana.');
+  let last = '';
+  return ms.map(m => {
+    const h = m.weekId !== last ? `<h3 class="text-xl font-bold text-yel mt-4 mb-2">Semana de ${wLabel(m.weekId)}</h3>` : '';
+    last = m.weekId;
+    const w = m.scoreA > m.scoreB ? 1 : m.scoreB > m.scoreA ? 2 : 0;
+    return h + `<div class="panel p-3 mb-2 flex items-center gap-3">
+      <div class="text-xs opacity-70 w-10">${fmt(m.date)}</div>
+      <div class="flex-1 text-right num text-xl ${w === 1 ? 'text-yel' : ''}">${esc(m.teamA)}</div>
+      <div class="num text-2xl font-bold px-2 bg-black/25 rounded">${m.scoreA} x ${m.scoreB}</div>
+      <div class="flex-1 num text-xl ${w === 2 ? 'text-yel' : ''}">${esc(m.teamB)}</div>
+      ${isAdmin ? `<button data-a="delm" data-v="${m.id}" class="text-red-300 text-sm" aria-label="Excluir partida">✕</button>` : ''}</div>`;
+  }).join('');
+}
 
-        // Elementos da UI
-        const loginScreen = document.getElementById('login-screen');
-        const appScreen = document.getElementById('app-screen');
-        const loginForm = document.getElementById('login-form');
-        const logoutBtn = document.getElementById('logout-btn');
-        const navAdmin = document.getElementById('nav-admin');
+const myPlayer = () => players.find(p => p.email && user && p.email.toLowerCase() === user.email.toLowerCase());
+function rVote() {
+  const w = curW(), me = myPlayer(), list = sp().filter(p => p.id !== me?.id);
+  const note = `<p class="text-sm opacity-80 mb-4">Avaliando a semana de ${wLabel(w)}. Arraste o controle para dar uma nota de 0 a 10; ela é salva na hora e você pode mudar depois.${me ? '' : ' O admin precisa vincular o seu e-mail a um jogador para você não aparecer na própria lista.'}</p>`;
+  if (!list.length) return note + empty('Nenhum jogador para avaliar.');
+  return note + `<div class="grid md:grid-cols-2 gap-3">${list.map(p => {
+    const r = ratings.find(x => x.id === `${w}_${user.uid}_${p.id}`);
+    return `<div class="panel p-3"><div class="flex justify-between items-center"><span class="num text-xl font-bold">${esc(p.name)}</span>
+      <span id="v-${p.id}" class="num text-3xl font-bold ${r ? 'text-yel' : 'opacity-40'}">${r ? r.value.toFixed(1) : '–'}</span></div>
+      <input type="range" min="0" max="10" step="0.5" value="${r ? r.value : 5}" data-p="${p.id}" class="rate w-full mt-2" aria-label="Nota para ${esc(p.name)}"></div>`;
+  }).join('')}</div>`;
+}
 
-        // Autenticação
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                isAdmin = user.email === 'admin@pelada.com';
-                document.getElementById('user-email-display').innerText = user.email;
-                loginScreen.classList.add('hidden');
-                appScreen.classList.remove('hidden');
-                
-                if (isAdmin) {
-                    navAdmin.classList.remove('hidden');
-                } else {
-                    navAdmin.classList.add('hidden');
-                    window.switchTab('ranking');
-                }
-                loadPlayers();
-            } else {
-                currentUser = null;
-                isAdmin = false;
-                loginScreen.classList.remove('hidden');
-                appScreen.classList.add('hidden');
-            }
-        });
+function rAdmin() {
+  const subs = [['stats', 'Estatísticas da semana'], ['matches', 'Partidas'], ['players', 'Jogadores']];
+  let body = '';
+  if (S.sub === 'stats') {
+    const w = curW();
+    body = `<div class="panel p-4 mb-4 flex flex-wrap items-end gap-3"><div class="mr-auto"><div class="text-xs opacity-70">Semana em edição</div><div class="num text-2xl font-bold">${wLabel(w)}</div></div>
+      <label class="text-xs">Abrir outra semana<input type="date" id="newweek" class="inp block mt-1"></label><button data-a="openweek" class="btn2">Abrir</button></div>
+      ${players.length ? `<div class="panel overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-left opacity-70"><th class="p-3">Jogador</th><th>Gols</th><th>Assist.</th><th>Defesas</th></tr></thead><tbody>
+      ${sp().map(p => { const s = stats.find(x => x.id === w + '_' + p.id) || {}; return `<tr class="border-t border-[var(--line)]"><td class="p-3 num text-lg">${esc(p.name)}</td>${['goals', 'assists', 'defense'].map(k => `<td class="py-2"><input type="number" min="0" value="${s[k] || 0}" data-w="${p.id}" data-k="${k}" class="inp w-16 text-center" aria-label="${k} de ${esc(p.name)}"></td>`).join('')}</tr>`; }).join('')}
+      </tbody></table></div><button data-a="savew" class="btn mt-4 w-full">Salvar semana</button>` : empty('Cadastre jogadores na aba Jogadores.')}`;
+  } else if (S.sub === 'matches') {
+    body = `<div class="panel p-4 mb-4 grid grid-cols-2 md:grid-cols-6 gap-2">
+      <input type="date" id="m-date" class="inp col-span-2 md:col-span-1" value="${iso(new Date())}"><input id="m-ta" class="inp" placeholder="Time A"><input id="m-sa" type="number" min="0" class="inp" placeholder="Gols A"><input id="m-sb" type="number" min="0" class="inp" placeholder="Gols B"><input id="m-tb" class="inp" placeholder="Time B">
+      <button data-a="addm" class="btn col-span-2 md:col-span-1">Adicionar</button></div>${rMatches()}`;
+  } else {
+    body = `<button data-a="newp" class="btn mb-3">Novo jogador</button>${sp().map(p => `<div class="panel p-3 mb-2 flex items-center gap-3"><div class="flex-1 min-w-0"><div class="num text-xl font-bold">${esc(p.name)}</div>
+      <div class="text-xs opacity-70 truncate">${esc(p.email || 'sem e-mail vinculado')}. Anterior: ${p.goals || 0} gols, ${p.assists || 0} assist., ${p.defense || 0} defesas</div></div>
+      <button data-a="editp" data-v="${p.id}" class="btn2">Editar</button><button data-a="delp" data-v="${p.id}" class="text-red-300 px-2">Excluir</button></div>`).join('') || empty('Nenhum jogador ainda.')}`;
+  }
+  return `<div class="flex gap-2 mb-4 overflow-x-auto">${subs.map(([k, l]) => `<button data-a="sub" data-v="${k}" class="chip ${S.sub === k ? 'on' : ''}">${l}</button>`).join('')}</div>${body}`;
+}
 
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            signInWithEmailAndPassword(auth, email, password)
-                .catch(error => {
-                    document.getElementById('login-error').classList.remove('hidden');
-                    console.error("Login failed", error);
-                });
-        });
+const TITLES = { ranking: 'Ranking', matches: 'Partidas', vote: 'Avaliar a galera', admin: 'Painel do admin' };
+const typing = () => document.activeElement?.matches?.('[data-w],.rate,#newweek,#m-date,#m-ta,#m-sa,#m-sb,#m-tb');
+function render() {
+  if (!user || typing()) return;
+  if (S.tab === 'admin' && !isAdmin) S.tab = 'ranking';
+  $('who').textContent = user.email;
+  $('nav-admin').classList.toggle('hidden', !isAdmin);
+  $('weekbar').innerHTML = `<button data-a="week" data-v="all" class="chip ${S.week === 'all' ? 'on' : ''}">Geral</button>` +
+    weeks().map(w => `<button data-a="week" data-v="${w}" class="chip ${S.week === w ? 'on' : ''}">${wLabel(w)}${w === thisWeek() ? ' (atual)' : ''}</button>`).join('');
+  document.querySelectorAll('.nav').forEach(n => n.classList.toggle('on', n.dataset.v === S.tab));
+  $('title').textContent = TITLES[S.tab];
+  $('view').innerHTML = { ranking: rRanking, matches: rMatches, vote: rVote, admin: rAdmin }[S.tab]();
+}
 
-        logoutBtn.addEventListener('click', () => signOut(auth));
+/* ---------- Jogador (modal) ---------- */
+function playerModal(id) {
+  const p = players.find(x => x.id === id) || {};
+  dlgPid = id || null;
+  $('dlg-body').innerHTML = `<h3 class="text-2xl font-bold mb-2">${id ? 'Editar jogador' : 'Novo jogador'}</h3>
+    <label class="lbl">Nome<input id="p-name" class="inp w-full" value="${esc(p.name)}"></label>
+    <label class="lbl">E-mail de login do jogador (opcional)<input id="p-email" type="email" class="inp w-full" value="${esc(p.email)}"></label>
+    <div class="text-xs opacity-70 mt-4">Acumulado anterior: dados de antes do controle por semana. Aparecem só na visão Geral.</div>
+    <div class="grid grid-cols-3 gap-2">${[['goals', 'Gols'], ['assists', 'Assist.'], ['defense', 'Defesas']].map(([k, l]) => `<label class="lbl">${l}<input id="p-${k}" type="number" min="0" class="inp w-full" value="${p[k] || 0}"></label>`).join('')}</div>
+    <div class="flex justify-end gap-2 mt-5"><button data-a="closedlg" class="btn2">Cancelar</button><button data-a="savep" class="btn">Salvar jogador</button></div>`;
+  $('dlg').showModal();
+}
 
-        // Controle de Abas (Global para acesso via HTML)
-        window.switchTab = function(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-            
-            document.getElementById(`tab-${tabId}`).classList.add('active');
-            event.currentTarget.classList.add('active');
-        };
+/* ---------- Ações ---------- */
+const int = id => Math.max(0, parseInt($(id).value) || 0);
+document.addEventListener('click', async e => {
+  const t = e.target.closest('[data-a]'); if (!t) return;
+  const a = t.dataset.a, v = t.dataset.v;
+  try {
+    if (a === 'tab') S.tab = v;
+    else if (a === 'week') S.week = v;
+    else if (a === 'sort') S.sort = v;
+    else if (a === 'sub') S.sub = v;
+    else if (a === 'logout') return signOut(auth);
+    else if (a === 'openweek') { const d = $('newweek').value; if (!d) return toast('Escolha uma data'); const w = monday(d); extra.push(w); S.week = w; }
+    else if (a === 'savew') {
+      const w = curW(), b = writeBatch(db);
+      sp().forEach(p => {
+        const val = {};
+        ['goals', 'assists', 'defense'].forEach(k => val[k] = Math.max(0, parseInt(document.querySelector(`[data-w="${p.id}"][data-k="${k}"]`).value) || 0));
+        if (stats.some(s => s.id === w + '_' + p.id) || val.goals + val.assists + val.defense > 0) b.set(doc(db, 'stats', w + '_' + p.id), { weekId: w, playerId: p.id, ...val });
+      });
+      await b.commit(); toast('Semana salva');
+    }
+    else if (a === 'addm') {
+      const ta = $('m-ta').value.trim(), tb = $('m-tb').value.trim(), date = $('m-date').value;
+      if (!ta || !tb || !date || $('m-sa').value === '' || $('m-sb').value === '') return toast('Preencha data, times e placar');
+      await addDoc(collection(db, 'matches'), { date, weekId: monday(date), teamA: ta, teamB: tb, scoreA: int('m-sa'), scoreB: int('m-sb') });
+      S.week = monday(date); toast('Partida adicionada');
+    }
+    else if (a === 'delm') { if (confirm('Excluir esta partida?')) await deleteDoc(doc(db, 'matches', v)); }
+    else if (a === 'newp') return playerModal();
+    else if (a === 'editp') return playerModal(v);
+    else if (a === 'delp') { if (confirm('Excluir este jogador? As estatísticas dele deixam de aparecer.')) await deleteDoc(doc(db, 'players', v)); }
+    else if (a === 'closedlg') return $('dlg').close();
+    else if (a === 'savep') {
+      const d = { name: $('p-name').value.trim(), email: $('p-email').value.trim().toLowerCase(), goals: int('p-goals'), assists: int('p-assists'), defense: int('p-defense') };
+      if (!d.name) return toast('Informe o nome');
+      dlgPid ? await updateDoc(doc(db, 'players', dlgPid), d) : await addDoc(collection(db, 'players'), { ...d, createdAt: Date.now() });
+      $('dlg').close(); toast('Jogador salvo');
+    }
+  } catch (err) { console.error(err); toast('Erro: ' + (err.code || err.message)); }
+  render();
+});
 
-        // Carregar e Renderizar Jogadores
-        async function loadPlayers() {
-            const querySnapshot = await getDocs(collection(db, "players"));
-            playersData = [];
-            querySnapshot.forEach((doc) => {
-                playersData.push({ id: doc.id, ...doc.data() });
-            });
-            renderAdminTable();
-            renderRanking();
-            renderVotingList();
-        }
+document.addEventListener('input', e => {
+  const r = e.target.closest('.rate'); if (!r) return;
+  const el = $('v-' + r.dataset.p); el.textContent = (+r.value).toFixed(1); el.classList.add('text-yel'); el.classList.remove('opacity-40');
+});
+document.addEventListener('change', async e => {
+  const r = e.target.closest('.rate'); if (!r) return;
+  const w = curW();
+  try {
+    await setDoc(doc(db, 'ratings', `${w}_${user.uid}_${r.dataset.p}`), { weekId: w, playerId: r.dataset.p, raterUid: user.uid, value: +r.value, at: Date.now() });
+    toast('Nota salva');
+  } catch (err) { console.error(err); toast('Não foi possível salvar a nota'); }
+});
 
-        // Tabela Administrativa
-        function renderAdminTable() {
-            const tbody = document.getElementById('admin-players-list');
-            if(!tbody) return;
-            tbody.innerHTML = '';
+/* ---------- Login e dados em tempo real ---------- */
+const errMsg = c => ({ 'auth/invalid-credential': 'E-mail ou senha incorretos.', 'auth/email-already-in-use': 'Este e-mail já tem conta. Entre com a senha.', 'auth/weak-password': 'A senha precisa ter 6 ou mais caracteres.', 'auth/invalid-email': 'E-mail inválido.' }[c] || 'Não foi possível entrar. Tente de novo.');
+$('login-form').addEventListener('submit', async e => {
+  e.preventDefault(); $('login-error').classList.add('hidden');
+  try {
+    const em = $('email').value.trim(), pw = $('password').value;
+    S.signup ? await createUserWithEmailAndPassword(auth, em, pw) : await signInWithEmailAndPassword(auth, em, pw);
+  } catch (err) { console.error(err); $('login-error').textContent = errMsg(err.code); $('login-error').classList.remove('hidden'); }
+});
+$('toggle-mode').addEventListener('click', () => {
+  S.signup = !S.signup;
+  $('login-btn').textContent = S.signup ? 'Criar conta' : 'Entrar';
+  $('toggle-mode').textContent = S.signup ? 'Já tenho conta. Entrar' : 'Primeira vez aqui? Criar conta';
+});
 
-            playersData.forEach(player => {
-                const goals = player.goals || 0;
-                const assists = player.assists || 0;
-                const defense = player.defense || 0;
-                const rating = player.rating ? player.rating.toFixed(1) : '-';
-                const overall = player.overall ? player.overall.toFixed(1) : '-';
-
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-gray-750 transition-colors bg-gray-800';
-                tr.innerHTML = `
-                    <td class="px-4 py-3 font-medium text-white whitespace-nowrap">${player.name}</td>
-                    <td class="px-3 py-3 text-center"><input type="number" min="0" value="${goals}" id="gols-${player.id}" class="w-14 bg-gray-900 border border-gray-600 rounded p-1 text-center text-white outline-none focus:border-blue-500"></td>
-                    <td class="px-3 py-3 text-center"><input type="number" min="0" value="${assists}" id="assists-${player.id}" class="w-14 bg-gray-900 border border-gray-600 rounded p-1 text-center text-white outline-none focus:border-blue-500"></td>
-                    <td class="px-3 py-3 text-center"><input type="number" min="0" value="${defense}" id="defense-${player.id}" class="w-14 bg-gray-900 border border-gray-600 rounded p-1 text-center text-white outline-none focus:border-blue-500"></td>
-                    <td class="px-4 py-3 text-center font-bold text-yellow-400">${rating}</td>
-                    <td class="px-4 py-3 text-center font-bold text-green-400">${overall}</td>
-                    <td class="px-4 py-3 text-center">
-                        <button onclick="updatePlayerStats('${player.id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded shadow text-xs font-semibold uppercase transition-colors">Salvar</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        // Atualização de Estatísticas (Global para acesso via HTML)
-        window.updatePlayerStats = async function(playerId) {
-            try {
-                const goals = parseInt(document.getElementById(`gols-${playerId}`).value) || 0;
-                const assists = parseInt(document.getElementById(`assists-${playerId}`).value) || 0;
-                const defense = parseInt(document.getElementById(`defense-${playerId}`).value) || 0;
-                
-                // Exemplo de cálculo de Overall: Gols(x2) + Assists(x1.5) + Defesa(x1).
-                // A nota deve ser somada dinamicamente via backend, caso implementado.
-                const newOverall = (goals * 2) + (assists * 1.5) + (defense * 1);
-
-                const playerRef = doc(db, "players", playerId);
-                await updateDoc(playerRef, { goals, assists, defense, overall: newOverall });
-                
-                alert('Estatísticas atualizadas com sucesso.');
-                loadPlayers();
-            } catch (error) {
-                console.error('Erro na atualização:', error);
-                alert('Falha na comunicação com o banco de dados.');
-            }
-        };
-
-        // Novo Jogador
-        document.getElementById('btn-new-player').addEventListener('click', () => {
-            document.getElementById('modal-player').classList.remove('hidden');
-        });
-
-        document.getElementById('btn-save-player').addEventListener('click', async () => {
-            const name = document.getElementById('new-player-name').value;
-            if(!name) return;
-            try {
-                await addDoc(collection(db, "players"), {
-                    name: name, goals: 0, assists: 0, defense: 0, rating: 0, overall: 0, voteCount: 0
-                });
-                document.getElementById('modal-player').classList.add('hidden');
-                document.getElementById('new-player-name').value = '';
-                loadPlayers();
-            } catch (e) {
-                console.error("Erro ao adicionar documento: ", e);
-            }
-        });
-
-        // Tabela de Ranking
-        function renderRanking() {
-            const tbody = document.getElementById('ranking-list');
-            if(!tbody) return;
-            tbody.innerHTML = '';
-            
-            const sortedPlayers = [...playersData].sort((a, b) => (b.overall || 0) - (a.overall || 0));
-            
-            sortedPlayers.forEach((player, index) => {
-                const tr = document.createElement('tr');
-                tr.className = 'border-b border-gray-700 hover:bg-gray-750 transition-colors bg-gray-800';
-                tr.innerHTML = `
-                    <td class="px-4 py-3 font-bold text-gray-400">${index + 1}º</td>
-                    <td class="px-4 py-3 font-medium text-white">${player.name}</td>
-                    <td class="px-4 py-3 text-center">${player.goals || 0}</td>
-                    <td class="px-4 py-3 text-center font-bold text-green-400">${player.overall ? player.overall.toFixed(1) : '0.0'}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        // Renderização Simples de Votação (Mock)
-        function renderVotingList() {
-            const list = document.getElementById('players-voting-list');
-            if(!list) return;
-            list.innerHTML = '';
-            
-            playersData.forEach(player => {
-                const div = document.createElement('div');
-                div.className = 'bg-gray-800 p-4 rounded-xl border border-gray-700 flex justify-between items-center';
-                div.innerHTML = `
-                    <span class="font-medium text-white">${player.name}</span>
-                    <div class="flex items-center gap-2">
-                        <input type="number" min="0" max="10" placeholder="0-10" class="w-16 bg-gray-900 border border-gray-600 rounded p-2 text-center text-white outline-none focus:border-green-500">
-                        <button class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded transition-colors text-sm font-bold">OK</button>
-                    </div>
-                `;
-                list.appendChild(div);
-            });
-        }
-    </script>
+const listen = (name, set) => onSnapshot(collection(db, name), q => { set(q.docs.map(d => ({ id: d.id, ...d.data() }))); render(); }, () => toast('Sem permissão para ler ' + name));
+onAuthStateChanged(auth, u => {
+  unsubs.forEach(f => f()); unsubs = [];
+  user = u; isAdmin = !!u && u.email.toLowerCase() === ADMIN_EMAIL;
+  $('login-screen').classList.toggle('hidden', !!u);
+  $('app-screen').classList.toggle('hidden', !u);
+  if (!u) { players = stats = matches = ratings = []; return; }
+  unsubs = [listen('players', v => players = v), listen('stats', v => stats = v), listen('matches', v => matches = v), listen('ratings', v => ratings = v)];
+  render();
+});
+</script>
 </body>
 </html>
